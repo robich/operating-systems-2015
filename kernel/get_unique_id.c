@@ -3,5 +3,6 @@
 
 asmlinkage long sys_get_unique_id(int *uuid)
 {
-	return 17L;
+	printk("*************** salut *******************");
+	return -17;
 }

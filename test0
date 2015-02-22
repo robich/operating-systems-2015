@@ -1,0 +1,199 @@
+diff --git a/.config b/.config
+index a47b575..f27636b 100644
+--- a/.config
++++ b/.config
+@@ -293,7 +293,6 @@ CONFIG_X86_FEATURE_NAMES=y
+ CONFIG_X86_MPPARSE=y
+ # CONFIG_X86_BIGSMP is not set
+ # CONFIG_X86_EXTENDED_PLATFORM is not set
+-# CONFIG_X86_INTEL_LPSS is not set
+ # CONFIG_IOSF_MBI is not set
+ # CONFIG_X86_32_IRIS is not set
+ # CONFIG_SCHED_OMIT_FRAME_POINTER is not set
+@@ -409,7 +408,6 @@ CONFIG_X86_PAT=y
+ CONFIG_ARCH_USES_PG_UNCACHED=y
+ CONFIG_ARCH_RANDOM=y
+ CONFIG_X86_SMAP=y
+-# CONFIG_EFI is not set
+ # CONFIG_SECCOMP is not set
+ # CONFIG_HZ_100 is not set
+ CONFIG_HZ_250=y
+@@ -433,28 +431,7 @@ CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
+ # CONFIG_SUSPEND is not set
+ # CONFIG_HIBERNATION is not set
+ # CONFIG_PM_RUNTIME is not set
+-CONFIG_ACPI=y
+-CONFIG_ACPI_LEGACY_TABLES_LOOKUP=y
+-CONFIG_ARCH_MIGHT_HAVE_ACPI_PDC=y
+-# CONFIG_ACPI_PROCFS_POWER is not set
+-# CONFIG_ACPI_EC_DEBUGFS is not set
+-# CONFIG_ACPI_AC is not set
+-# CONFIG_ACPI_BATTERY is not set
+-CONFIG_ACPI_BUTTON=y
+-# CONFIG_ACPI_DOCK is not set
+-# CONFIG_ACPI_PROCESSOR is not set
+-# CONFIG_ACPI_CUSTOM_DSDT is not set
+-# CONFIG_ACPI_INITRD_TABLE_OVERRIDE is not set
+-# CONFIG_ACPI_DEBUG is not set
+-# CONFIG_ACPI_PCI_SLOT is not set
+-CONFIG_X86_PM_TIMER=y
+-# CONFIG_ACPI_CONTAINER is not set
+-# CONFIG_ACPI_SBS is not set
+-# CONFIG_ACPI_HED is not set
+-# CONFIG_ACPI_REDUCED_HARDWARE_ONLY is not set
+-CONFIG_HAVE_ACPI_APEI=y
+-CONFIG_HAVE_ACPI_APEI_NMI=y
+-# CONFIG_ACPI_APEI is not set
++# CONFIG_ACPI is not set
+ # CONFIG_SFI is not set
+ 
+ #
+@@ -478,7 +455,6 @@ CONFIG_PCI=y
+ CONFIG_PCI_GOANY=y
+ CONFIG_PCI_BIOS=y
+ CONFIG_PCI_DIRECT=y
+-CONFIG_PCI_MMCONFIG=y
+ CONFIG_PCI_DOMAINS=y
+ CONFIG_PCIEPORTBUS=y
+ # CONFIG_PCIEAER is not set
+@@ -495,7 +471,6 @@ CONFIG_PCIEASPM_DEFAULT=y
+ # CONFIG_PCI_IOV is not set
+ # CONFIG_PCI_PRI is not set
+ # CONFIG_PCI_PASID is not set
+-# CONFIG_PCI_IOAPIC is not set
+ CONFIG_PCI_LABEL=y
+ 
+ #
+@@ -651,13 +626,6 @@ CONFIG_GENERIC_CPU_AUTOPROBE=y
+ # CONFIG_MTD is not set
+ CONFIG_ARCH_MIGHT_HAVE_PC_PARPORT=y
+ # CONFIG_PARPORT is not set
+-CONFIG_PNP=y
+-CONFIG_PNP_DEBUG_MESSAGES=y
+-
+-#
+-# Protocols
+-#
+-CONFIG_PNPACPI=y
+ CONFIG_BLK_DEV=y
+ # CONFIG_BLK_DEV_NULL_BLK is not set
+ # CONFIG_BLK_DEV_FD is not set
+@@ -818,7 +786,6 @@ CONFIG_VMWARE_PVSCSI=m
+ CONFIG_ATA=m
+ # CONFIG_ATA_NONSTANDARD is not set
+ CONFIG_ATA_VERBOSE_ERROR=y
+-CONFIG_ATA_ACPI=y
+ CONFIG_SATA_PMP=y
+ 
+ #
+@@ -907,7 +874,6 @@ CONFIG_ATA_PIIX=m
+ #
+ # Generic fallback / legacy drivers
+ #
+-# CONFIG_PATA_ACPI is not set
+ CONFIG_ATA_GENERIC=m
+ # CONFIG_PATA_LEGACY is not set
+ # CONFIG_MD is not set
+@@ -1018,7 +984,6 @@ CONFIG_E1000E=m
+ # CONFIG_NET_VENDOR_WIZNET is not set
+ # CONFIG_FDDI is not set
+ # CONFIG_HIPPI is not set
+-# CONFIG_NET_SB1000 is not set
+ # CONFIG_PHYLIB is not set
+ # CONFIG_PPP is not set
+ # CONFIG_SLIP is not set
+@@ -1123,7 +1088,6 @@ CONFIG_DEVPTS_MULTIPLE_INSTANCES=y
+ #
+ CONFIG_SERIAL_8250=m
+ CONFIG_SERIAL_8250_DEPRECATED_OPTIONS=y
+-CONFIG_SERIAL_8250_PNP=y
+ CONFIG_SERIAL_8250_PCI=m
+ CONFIG_SERIAL_8250_NR_UARTS=32
+ CONFIG_SERIAL_8250_RUNTIME_UARTS=4
+@@ -1133,7 +1097,6 @@ CONFIG_SERIAL_8250_EXTENDED=y
+ # CONFIG_SERIAL_8250_DETECT_IRQ is not set
+ # CONFIG_SERIAL_8250_RSA is not set
+ # CONFIG_SERIAL_8250_DW is not set
+-# CONFIG_SERIAL_8250_FINTEK is not set
+ 
+ #
+ # Non-8250 serial port support
+@@ -1164,7 +1127,6 @@ CONFIG_NVRAM=m
+ # CONFIG_PC8736x_GPIO is not set
+ # CONFIG_NSC_GPIO is not set
+ # CONFIG_RAW_DRIVER is not set
+-# CONFIG_HPET is not set
+ # CONFIG_HANGCHECK_TIMER is not set
+ # CONFIG_TCG_TPM is not set
+ # CONFIG_TELCLOCK is not set
+@@ -1266,7 +1228,6 @@ CONFIG_AGP_INTEL=m
+ CONFIG_INTEL_GTT=m
+ CONFIG_VGA_ARB=y
+ CONFIG_VGA_ARB_MAX_GPUS=16
+-# CONFIG_VGA_SWITCHEROO is not set
+ 
+ #
+ # Direct Rendering Manager
+@@ -1498,7 +1459,6 @@ CONFIG_FIRMWARE_MEMMAP=y
+ # CONFIG_DMIID is not set
+ # CONFIG_DMI_SYSFS is not set
+ CONFIG_DMI_SCAN_MACHINE_NON_EFI_FALLBACK=y
+-# CONFIG_ISCSI_IBFT_FIND is not set
+ # CONFIG_GOOGLE_FIRMWARE is not set
+ 
+ #
+diff --git a/arch/x86/syscalls/syscall_32.tbl b/arch/x86/syscalls/syscall_32.tbl
+index aed156a..9fe1b5d 100644
+--- a/arch/x86/syscalls/syscall_32.tbl
++++ b/arch/x86/syscalls/syscall_32.tbl
+@@ -364,5 +364,3 @@
+ 355	i386	getrandom		sys_getrandom
+ 356	i386	memfd_create		sys_memfd_create
+ 357	i386	bpf			sys_bpf
+-358	i386	get_unique_id		sys_get_unique_id		
+-
+diff --git a/arch/x86/syscalls/syscall_64.tbl b/arch/x86/syscalls/syscall_64.tbl
+index de627ac..281150b 100644
+--- a/arch/x86/syscalls/syscall_64.tbl
++++ b/arch/x86/syscalls/syscall_64.tbl
+@@ -366,4 +366,3 @@
+ 542	x32	getsockopt		compat_sys_getsockopt
+ 543	x32	io_setup		compat_sys_io_setup
+ 544	x32	io_submit		compat_sys_io_submit
+-545	x32	get_unique_id		compat_sys_get_unique_id
+diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+index 2a3c065..bda9b81 100644
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -877,6 +877,4 @@ asmlinkage long sys_seccomp(unsigned int op, unsigned int flags,
+ asmlinkage long sys_getrandom(char __user *buf, size_t count,
+ 			      unsigned int flags);
+ asmlinkage long sys_bpf(int cmd, union bpf_attr *attr, unsigned int size);
+-asmlinkage long sys_get_unique_id(int *uuid);
+ #endif
+-
+diff --git a/kernel/Makefile b/kernel/Makefile
+index 5bd3c16..17ea6d4 100644
+--- a/kernel/Makefile
++++ b/kernel/Makefile
+@@ -26,7 +26,6 @@ obj-y += power/
+ obj-y += printk/
+ obj-y += irq/
+ obj-y += rcu/
+-obj-y += get_unique_id.o
+ 
+ obj-$(CONFIG_CHECKPOINT_RESTORE) += kcmp.o
+ obj-$(CONFIG_FREEZER) += freezer.o
+diff --git a/kernel/get_unique_id.c b/kernel/get_unique_id.c
+deleted file mode 100644
+index 5419382..0000000
+--- a/kernel/get_unique_id.c
++++ /dev/null
+@@ -1,7 +0,0 @@
+-#include<linux/linkage.h>
+-#include<linux/uaccess.h>
+-
+-asmlinkage long sys_get_unique_id(int *uuid)
+-{
+-	return 17L;
+-}
