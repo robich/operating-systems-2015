@@ -118,7 +118,8 @@ alias cdgit='cd /usr/git/operating-systems-2015/assignment01'
 # Copy from/to git
 alias cpkernelfromgit='sudo cp -r /usr/git/operating-systems-2015/assignment01/linux/kernel/* /usr/src/linux/kernel'
 alias cparchfromgit='sudo cp -r /usr/git/operating-systems-2015/assignment01/linux/arch/* /usr/src/linux/arch'
-alias cplinuxtogit='sudo cp -r /usr/src/linux/* /usr/git/operating-systems-2015/assignment01/linux'
+alias cpkerneltogit='sudo cp -r /usr/src/linux/kernel/* /usr/git/operating-systems-2015/assignment01/linux/kernel'
+alias cparchfromgit='sudo cp -r /usr/src/linux/arch/* /usr/git/operating-systems-2015/assignment01/linux/arch'
 
 alias mkimage='make -j2 /usr/src/linux/bzImage'
 alias cpimage='sudo cp /usr/src/linux/arch/x86/boot/bzImage /boot/vmlinuz-3.18.3+'
