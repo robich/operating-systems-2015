@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Test root access
+if [ "$(id -u)" != "0" ]; then
+   echo -e "[\e[31mError\e[0m] This script must be run as root" 1>&2
+   exit 1
+fi
+
 # Save current directory
 $dir=${PWD}
 
