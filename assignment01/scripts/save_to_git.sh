@@ -1,15 +1,18 @@
 #!/bin/bash
 
-# Copy important folders
+# Copy important folders into git folder
+
+# cpkerneltogit
 echo "Copying Kernel..."
-cpkerneltogit
+sudo cp -r /usr/src/linux/kernel/* /usr/git/operating-systems-2015/assignment01/linux/kernel
+# cpsyscallstogit
 echo "Copying Syscalls..."
-cpsyscallstogit
+sudo cp -r /usr/src/linux/arch/x86/syscalls* /usr/git/operating-systems-2015/assignment01/linux/arch/x86/syscalls
 
 cd /usr/git/operating-systems-2015/assignment01/linux
 
-# Git push
-echo "Commit to git...
+# Save on git
+echo "Commit to git..."
 git add  --all .
 git commit
 echo "Git pull..."
