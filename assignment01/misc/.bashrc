@@ -116,8 +116,8 @@ GITDIR=/usr/git/operating-systems-2015/assignment01
 # Custom Aliases
 
 # Script commands
-alias load_from_git='/usr/git/operating-systems-2015/assignment01/scripts/load_from_git.sh'
-alias save_to_git='/usr/git/operating-systems-2015/assignment01/scripts/save_to_git.sh'
+alias load_from_git='sudo /usr/git/operating-systems-2015/assignment01/scripts/load_from_git.sh'
+alias save_to_git='sudo /usr/git/operating-systems-2015/assignment01/scripts/save_to_git.sh'
 
 # Cds
 alias cdlinux='cd /usr/src/linux'
