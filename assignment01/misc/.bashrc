@@ -109,6 +109,9 @@ if ! shopt -oq posix; then
   fi
 fi
 
+# Add script folder to path
+export PATH=$PATH:/usr/git/operating-systems-2015/assignment01/scripts/
+
 # Custom Aliases
 
 # Cds
