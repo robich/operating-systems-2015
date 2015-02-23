@@ -1,24 +1,30 @@
 #!/bin/bash
 
+# Test root access
+if [ "$(id -u)" != "0" ]; then
+   echo -e "[\e[31mInfo\e[0m] This script must be run as root" 1>&2
+   exit 1
+fi
+
 # Save working directory
 $dir=${PWD}
 
 # Copy Kernel Directory
-echo "[\e[94mInfo\e[0m] Copying Kernel..."
+echo -e "[\e[94mInfo\e[0m] Copying Kernel..."
 sudo cp -r /usr/src/linux/kernel/* /usr/git/operating-systems-2015/assignment01/linux/kernel
 # Copy Syscalls Directory
-echo "[\e[94mInfo\e[0m] Copying Syscalls..."
+echo -e "[\e[94mInfo\e[0m] Copying Syscalls..."
 sudo cp -r /usr/src/linux/arch/x86/syscalls* /usr/git/operating-systems-2015/assignment01/linux/arch/x86/syscalls
 
 cd /usr/git/operating-systems-2015/
 
 # Save on git
-echo "[\e[94mInfo\e[0m] Commit to git..."
+echo -e "[\e[94mInfo\e[0m] Commit to git..."
 git add  --all .
 git commit
-echo "[\e[94mInfo\e[0m] Git pull..."
+echo -e "[\e[94mInfo\e[0m] Git pull..."
 git pull
-echo "[\e[94mInfo\e[0m] Git push..."
+echo -e "[\e[94mInfo\e[0m] Git push..."
 git push
 
 # Go back to working directory
