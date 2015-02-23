@@ -2,7 +2,7 @@
 
 # Cds
 alias cdlinux='cd /usr/src/linux'
-alias cdgit='cd /usr/git/operating-systems-2015/assignment##
+alias cdgit='cd /usr/git/operating-systems-2015/assignment01'
 
 # Copy from/to git
 alias cpkernelfromgit='sudo cp -r /usr/git/operating-systems-2015/assignment01/linux/kernel/* /usr/src/linux/kernel'
