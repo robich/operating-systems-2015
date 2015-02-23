@@ -110,7 +110,7 @@ if ! shopt -oq posix; then
 fi
 
 # Add script folder to path
-export PATH=$PATH:/usr/git/operating-systems-2015/assignment01/scripts/
+export /bin:usr/bin:usr/local/bin:usr/local/games:/usr/git/operating-systems-2015/assignment01/scripts
 
 # Custom Aliases
 
