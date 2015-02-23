@@ -129,3 +129,5 @@ alias cpimage='sudo cp /usr/src/linux/arch/x86/boot/bzImage /boot/vmlinuz-3.18.3
 alias mkmod='make /usr/src/linux/modules'
 alias mkmodinst='sudo make /usr/src/linux/modules_install'
 alias ldkernel='sudo update-initramfs -k 3.18.3+'
+
+alias updatebashrc='cp /usr/git/operating-systems-2015/assignment01/misc/.bashrc ~'
