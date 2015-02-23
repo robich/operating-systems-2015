@@ -1,0 +1,16 @@
+# Custom Scripts
+
+# Cds
+alias cdlinux='cd /usr/src/linux'
+alias cdgit='cd /usr/git/operating-systems-2015/assignment##
+
+# Copy from/to git
+alias cpkernelfromgit='sudo cp -r /usr/git/operating-systems-2015/assignment01/linux/kernel/* /usr/src/linux/kernel'
+alias cparchfromgit='sudo cp -r /usr/git/operating-systems-2015/assignment01/linux/arch/* /usr/src/linux/arch'
+alias cplinuxtogit='sudo cp -r /usr/src/linux/* /usr/git/operating-systems-2015/assignment01/linux'
+
+alias mkimage='make -j2 /usr/src/linux/bzImage'
+alias cpimage='sudo cp /usr/src/linux/arch/x86/boot/bzImage /boot/vmlinuz-3.18.3+'
+alias mkmod='make /usr/src/linux/modules'
+alias mkmodinst='sudo make /usr/src/linux/modules_install'
+alias ldkernel='sudo update-initramfs -k 3.18.3+'
