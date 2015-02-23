@@ -109,6 +109,10 @@ if ! shopt -oq posix; then
   fi
 fi
 
+# Environment Variables
+
+GITDIR=/usr/git/operating-systems-2015/assignment01
+
 # Custom Aliases
 
 # Script commands
