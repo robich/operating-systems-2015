@@ -1,21 +1,33 @@
 #!/bin/bash
 
-# Copy important folders into git folder
+# Test root access
+if [ "$(id -u)" != "0" ]; then
+   echo -e "[\e[31mError\e[0m] This script must be run as root" 1>&2
+   exit 1
+fi
 
-# cpkerneltogit
-echo "Copying Kernel..."
+# Save working directory
+$dir=${PWD}
+
+# Copy Kernel Directory
+echo -e "[\e[94mInfo\e[0m] Copying Kernel..."
 sudo cp -r /usr/src/linux/kernel/* /usr/git/operating-systems-2015/assignment01/linux/kernel
-# cpsyscallstogit
-echo "Copying Syscalls..."
+# Copy Syscalls Directory
+echo -e "[\e[94mInfo\e[0m] Copying Syscalls..."
 sudo cp -r /usr/src/linux/arch/x86/syscalls* /usr/git/operating-systems-2015/assignment01/linux/arch/x86/syscalls
 
-cd /usr/git/operating-systems-2015/assignment01/linux
+cd /usr/git/operating-systems-2015/
 
 # Save on git
-echo "Commit to git..."
+echo -e "[\e[94mInfo\e[0m] Commit to git..."
 git add  --all .
 git commit
-echo "Git pull..."
+echo -e "[\e[94mInfo\e[0m] Git pull..."
 git pull
-echo "Git push..."
+echo -e "[\e[94mInfo\e[0m] Git push..."
 git push
+
+# Go back to working directory
+cd $dir
+
+echo "[\e[32mOK\e[0m]"

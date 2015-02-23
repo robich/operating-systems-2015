@@ -109,10 +109,15 @@ if ! shopt -oq posix; then
   fi
 fi
 
-# Add script folder to path
-export PATH=$PATH:/usr/git/operating-systems-2015/assignment01/scripts/
+# Environment Variables
+
+GITDIR=/usr/git/operating-systems-2015/assignment01
 
 # Custom Aliases
+
+# Script commands
+alias load_from_git='sudo /usr/git/operating-systems-2015/assignment01/scripts/load_from_git.sh'
+alias save_to_git='sudo /usr/git/operating-systems-2015/assignment01/scripts/save_to_git.sh'
 
 # Cds
 alias cdlinux='cd /usr/src/linux'
@@ -129,3 +134,5 @@ alias cpimage='sudo cp /usr/src/linux/arch/x86/boot/bzImage /boot/vmlinuz-3.18.3
 alias mkmod='make /usr/src/linux/modules'
 alias mkmodinst='sudo make /usr/src/linux/modules_install'
 alias ldkernel='sudo update-initramfs -k 3.18.3+'
+
+alias updatebashrc='cp /usr/git/operating-systems-2015/assignment01/misc/.bashrc ~'
