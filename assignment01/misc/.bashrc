@@ -109,10 +109,11 @@ if ! shopt -oq posix; then
   fi
 fi
 
-# Add script folder to path
-export PATH=/bin:usr/bin:usr/local/bin:usr/local/games:/usr/git/operating-systems-2015/assignment01/scripts
-
 # Custom Aliases
+
+# Script commands
+alias load_from_git='/usr/git/operating-systems-2015/assignment01/scripts/load_from_git.sh'
+alias save_to_git='/usr/git/operating-systems-2015/assignment01/scripts/save_to_git.sh'
 
 # Cds
 alias cdlinux='cd /usr/src/linux'
