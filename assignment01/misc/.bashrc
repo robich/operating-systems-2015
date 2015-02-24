@@ -118,6 +118,7 @@ GITDIR=/usr/git/operating-systems-2015/assignment01
 # Script commands
 alias load_from_git='sudo /usr/git/operating-systems-2015/assignment01/scripts/load_from_git.sh'
 alias save_to_git='sudo /usr/git/operating-systems-2015/assignment01/scripts/save_to_git.sh'
+alias full_lernel_compile='sudo /usr/git/operating-systems-2015/assignment01/scripts/full_kernel_compile.sh'
 
 # Cds
 alias cdlinux='cd /usr/src/linux'
@@ -129,7 +130,7 @@ alias cpsyscallsfromgit='sudo cp -r /usr/git/operating-systems-2015/assignment01
 alias cpkerneltogit='sudo cp -r /usr/src/linux/kernel/* /usr/git/operating-systems-2015/assignment01/linux/kernel'
 alias cpsyscallstogit='sudo cp -r /usr/src/linux/arch/x86/syscalls* /usr/git/operating-systems-2015/assignment01/linux/arch/x86/syscalls'
 
-alias mkimage='make -j2 /usr/src/linux/bzImage'
+alias mkimage='cd /usr/src/linux;make -j2 bzImage'
 alias cpimage='sudo cp /usr/src/linux/arch/x86/boot/bzImage /boot/vmlinuz-3.18.3+'
 alias mkmod='make /usr/src/linux/modules'
 alias mkmodinst='sudo make /usr/src/linux/modules_install'

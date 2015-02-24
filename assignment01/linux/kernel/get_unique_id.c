@@ -3,6 +3,10 @@
 
 asmlinkage long sys_get_unique_id(int *uuid)
 {
-	printk("***HEHEHEHEHE******** salut *******************");
-	return -17;
+	// Deal with concurrency !
+
+	// Use put_user
+	int x = 10;
+	return put_user(x, uuid);
 }
+

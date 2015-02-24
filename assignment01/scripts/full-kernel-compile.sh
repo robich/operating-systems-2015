@@ -2,7 +2,7 @@
 # Compiles and installs the linux kernel, then reboots
 
 
-cd ../linux
+cd /usr/src/linux
 echo -e "\e[32mCompiling...\e[0m"
 sudo make -j2 bzImage
 echo -e "\e[32mCopying...\e[0m"
