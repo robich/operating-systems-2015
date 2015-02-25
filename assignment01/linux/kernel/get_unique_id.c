@@ -4,7 +4,7 @@
 asmlinkage long sys_get_unique_id(int *uuid)
 {
 	// Deal with concurrency !
-	// HELLO
+	// HELLO_BITCHES
 	// Use put_user
 	int x = 10;
 	return put_user(x, uuid);
