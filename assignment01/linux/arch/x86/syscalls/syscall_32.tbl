@@ -365,3 +365,4 @@
 356	i386	memfd_create		sys_memfd_create
 357	i386	bpf			sys_bpf
 358	i386	get_unique_id		sys_get_unique_id
+359	I386	get_child_pids		sys_get_child_pids
