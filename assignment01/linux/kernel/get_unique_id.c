@@ -8,5 +8,6 @@ asmlinkage long sys_get_unique_id(int *uuid)
 	// Use put_user
 	int x = 10;
 	return put_user(x, uuid);
+	// Testing shitty scripts
 }
 
