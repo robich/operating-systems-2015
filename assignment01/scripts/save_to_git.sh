@@ -23,12 +23,12 @@ cd /usr/git/operating-systems-2015/
 
 # Save on git
 echo -e "[\e[94mInfo\e[0m] Commit to git..."
-git add  --all .
-git commit
+sudo git add  --all .
+sudo git commit
 echo -e "[\e[94mInfo\e[0m] Git pull..."
-git pull
+sudo git pull
 echo -e "[\e[94mInfo\e[0m] Git push..."
-git push
+sudo git push
 
 # Go back to working directory
 cd $dir
