@@ -9,6 +9,9 @@ fi
 # Save working directory
 $dir=${PWD}
 
+# Save git credentials for 15 mins
+git config --global credential.helper cache
+
 # Copy Kernel Directory
 echo -e "[\e[94mInfo\e[0m] Copying Kernel..."
 sudo cp -r /usr/src/linux/kernel/* /usr/git/operating-systems-2015/assignment01/linux/kernel
