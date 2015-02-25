@@ -367,4 +367,3 @@
 543	x32	io_setup		compat_sys_io_setup
 544	x32	io_submit		compat_sys_io_submit
 545	x32	get_unique_id		compat_sys_get_unique_id
-546	x32	get_child_pids		compat_sys_get_child_pids
