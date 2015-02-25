@@ -14,7 +14,7 @@ echo -e "[\e[94mInfo\e[0m] Copying Kernel..."
 sudo cp -r /usr/src/linux/kernel/* /usr/git/operating-systems-2015/assignment01/linux/kernel
 # Copy Syscalls Directory
 echo -e "[\e[94mInfo\e[0m] Copying Syscalls..."
-sudo cp -r /usr/src/linux/arch/x86/syscalls* /usr/git/operating-systems-2015/assignment01/linux/arch/x86/syscalls
+sudo cp -r /usr/src/linux/arch/x86/syscalls/* /usr/git/operating-systems-2015/assignment01/linux/arch/x86/syscalls
 
 cd /usr/git/operating-systems-2015/
 
