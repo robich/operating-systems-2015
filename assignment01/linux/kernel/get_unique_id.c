@@ -1,5 +1,6 @@
 #include<linux/linkage.h>
 #include<linux/uaccess.h>
+<<<<<<< HEAD
 #include<linux/module.h>
 #include<linux/init.h>
 #include<linux/spinlock.h>
@@ -13,6 +14,18 @@ static int __init hi(void)
 	id = 0;
 
 	return 0;
+=======
+#include<linux/spinlock.h>
+asmlinkage long sys_get_unique_id(int *uuid)
+{
+	// Hi guys! (from Robin, with <3)
+	// Deal with concurrency !
+	// HELLO_BITCHES
+	// Use put_user
+	int x = 10;
+	return put_user(x, uuid);
+	//Working here (Alain)
+>>>>>>> d02acfa27ed8b70a848e2a5c4d83982889c1a144
 }
 
 module_init(hi);
