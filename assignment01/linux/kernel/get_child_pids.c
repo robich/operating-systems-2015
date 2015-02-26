@@ -14,8 +14,8 @@ asmlinkage long sys_get_child_pids(pid_t* list, size_t limit, size_t* num_childr
 	res = 0;
 
 	// Counter for children tasks
-	size_t children;
-	children = 0;
+	size_t children_count;
+	children_count = 0;
 
 	// First check on memory validity
 	if (list == NULL && limit != 0) {
@@ -36,9 +36,9 @@ asmlinkage long sys_get_child_pids(pid_t* list, size_t limit, size_t* num_childr
 		printk(KERN_DEBUG "Looking at child pid %zu\n", child_id);
 
 		// Increment number of children
-		children = children + 1;
+		children_count++;
 
-		if (children <= limit) {
+		if (children_count <= limit) {
 			// Store children pid in the list
 			if(put_user(child_id, list) == -EFAULT){
 				printk(KERN_ERR "Error while writing children id\n");
@@ -49,14 +49,18 @@ asmlinkage long sys_get_child_pids(pid_t* list, size_t limit, size_t* num_childr
 		}
 	}
 
-	if (children <= limit) {
-		// Need to return -ENOBUFFS;
+	if (children_count > limit) {
+		// Need to return -ENOBUFS;
+		printk(KERN_DEBUG "List is too big to fit !\n");
 		res = -ENOBUFS;
 	}
 
+	printk(KERN_DEBUG "Trying to write nr %zu\n", children_count);
+
 	// Write the number of children in num_children
-	if(put_user(children, num_children) == -EFAULT) {
-		printk(KERN_ERR, "Cannot write number of children\n");
+	if(put_user(children_count, num_children) == -EFAULT) {
+		printk(KERN_ERR "Cannot write number of children\n");
+		return -EFAULT;
 	}
 
 	return res;
