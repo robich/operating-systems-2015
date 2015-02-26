@@ -24,11 +24,13 @@ int main () {
 		// CASE : Arbitrary address for num_children
 		res = get_child_pids(pid_list, limit, (size_t*)47424742);
 		printf ( "Testing arbitrary address for num_children. Syscall returned %d \n", res);
+		printf("---------------------\n");
 
 		// CASE : NULL pid_list, non initialized
 		res = get_child_pids(NULL, limit, &nr_children); 
 		printf ( "Testing NULL address for pids_list. Syscall returned %d \n", res);
-		
+		printf("---------------------\n");
+
 		// CASE : Normal execution, num_children < limit
 		res= get_child_pids(pid_list, limit, &nr_children) ? errno : 0;
 		printf("Testing Nr_children = 1, limit = 3. Syscall returned %d , nr_children is %d\n", res, nr_children);
