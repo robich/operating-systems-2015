@@ -9,6 +9,9 @@ fi
 # Save current directory
 $dir=${PWD}
 
+# Cache git credentials for 15 mins
+git config --global credentials.helper cache
+
 # Go to git folder
 cd /usr/git/operating-systems-2015
 
