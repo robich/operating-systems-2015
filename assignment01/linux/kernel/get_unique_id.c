@@ -19,19 +19,20 @@ module_init(hi);
 
 asmlinkage long sys_get_unique_id(int *uuid)
 {
-	// Lock
+	/* Lock */
 	spin_lock(&lock);
 
-	// Try to write the ID
+	/* Try to write the ID */
 	long res;
+
 	res = put_user(id, uuid);
 
 	spin_unlock(&lock);
 
-	if(res == -EFAULT) {
+	if (res == -EFAULT) {
 		printk(KERN_ERR "Trying to access an illegal memory location !\n");
 	} else {
-		// Only increment uuid if call is valid
+		/* Only increment uuid if call is valid */
 		id++;
 	}
 

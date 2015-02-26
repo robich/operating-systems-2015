@@ -51,7 +51,7 @@ void arrayContainsDouble() {
 		for (j = 0; j < ARRAY_SIZE; j++) {
 			if ( (array[i] == array[j]) && (i != j) ) {
 				printf("The element %d was generated twice!\n", array[i]);
-				exit(1);
+				exit(0);
 			}
 		}
 	}
