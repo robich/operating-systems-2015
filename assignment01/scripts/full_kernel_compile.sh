@@ -6,7 +6,7 @@ cd /usr/src/linux
 echo -e "\e[32mCompiling...\e[0m"
 sudo make -j2 bzImage
 if [ $? -ne 0 ]; then
-    echo "\e[31mERROR!!! bzImage not found\e[0m"
+    echo -e "\e[31m!!! ERROR bzImage not found !!!\e[0m"
     exit 1
 fi
 echo -e "\e[32mCopying...\e[0m"
