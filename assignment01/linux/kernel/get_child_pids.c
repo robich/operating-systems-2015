@@ -19,7 +19,7 @@ asmlinkage long sys_get_child_pids(pid_t* list, size_t limit, size_t* num_childr
 
 	// First check on memory validity
 	if (list == NULL && limit != 0) {
-		printk(KERN_ERR "List is NULL whereas limit is nonzero!");
+		printk(KERN_ERR "List is NULL whereas limit is nonzero!\n");
 		return -EFAULT;
 	}
 
@@ -33,7 +33,7 @@ asmlinkage long sys_get_child_pids(pid_t* list, size_t limit, size_t* num_childr
 		pid_t child_id;
 		child_id = child->pid;
 
-		printk(KERN_DEBUG "Looking at child pid %zu", child_id);
+		printk(KERN_DEBUG "Looking at child pid %zu\n", child_id);
 
 		// Increment number of children
 		children = children + 1;
@@ -41,7 +41,7 @@ asmlinkage long sys_get_child_pids(pid_t* list, size_t limit, size_t* num_childr
 		if (children <= limit) {
 			// Store children pid in the list
 			if(put_user(child_id, list) == -EFAULT){
-				printk(KERN_ERR "Error while writing children id");
+				printk(KERN_ERR "Error while writing children id\n");
 				return -EFAULT;
 			}
 			// Moves pointer to next memory slot
@@ -55,12 +55,8 @@ asmlinkage long sys_get_child_pids(pid_t* list, size_t limit, size_t* num_childr
 	}
 
 	// Write the number of children in num_children
-	long write = put_user(children, num_children);
-
-	// We make the choice to say that EFAULT is more important than
-	// ENOBUFFS in case both happen at the same time
-	if (write == -EFAULT) {
-		res = -EFAULT;
+	if(put_user(children, num_children) == -EFAULT) {
+		printk(KERN_ERR, "Cannot write number of children\n");
 	}
 
 	return res;
