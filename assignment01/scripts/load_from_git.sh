@@ -7,7 +7,7 @@ if [ "$(id -u)" != "0" ]; then
 fi
 
 # Save current directory
-$dir=${PWD}
+dir=`pwd`
 
 # Cache git credentials for 15 mins
 git config --global credentials.helper cache
@@ -18,6 +18,11 @@ cd /usr/git/operating-systems-2015
 # Pull from git
 echo -e "[\e[94mInfo\e[0m] Pulling from git..."
 git pull
+
+if [ $? -ne 0 ]; then
+    echo -e "\e[31mERROR: Git couldnt connect to the url. Exiting."
+    exit 1
+fi
 
 # Copy Kernel
 echo -e "[\e[94mInfo\e[0m] Copying Kernel Directory..."

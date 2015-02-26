@@ -7,7 +7,7 @@ if [ "$(id -u)" != "0" ]; then
 fi
 
 # Save working directory
-$dir=${PWD}
+dir=`pwd`
 
 # Save git credentials for 15 mins
 git config --global credential.helper cache
