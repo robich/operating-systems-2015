@@ -21,7 +21,7 @@ asmlinkage long sys_get_child_pids(pid_t* list, size_t limit, size_t* num_childr
 
 	// Structures for current task and a list for its children
 	struct task_struct* current_task;
-	struct list_head children_tasks_list;
+	struct list_head* children_tasks_list;
 	current_task = current;
 	children_tasks = current_task->children;
 
