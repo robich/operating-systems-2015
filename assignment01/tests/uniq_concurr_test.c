@@ -63,7 +63,7 @@ int main()
     int i;
     pthread_t tid;
  
-    // Let us create three threads
+    // Create THREAD_NUMBER threads
     printf("Creating threads...\n");
     for (i = 0; i < THREAD_NUMBER ; i++) {
 		pthread_mutex_lock(&running_mutex);
@@ -73,6 +73,7 @@ int main()
         pthread_create(&tid, NULL, startThread, (void *)i);
     }
     
+    // wait for all threads to finish working
     while (running_threads > 0) {
 		sleep(1);
 	}
