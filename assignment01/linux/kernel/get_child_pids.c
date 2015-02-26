@@ -7,7 +7,8 @@
 #include<linux/uaccess.h>
 #include<linux/list.h>
 
-asmlinkage long sys_get_child_pids(pid_t *list, size_t limit, size_t *num_children)
+asmlinkage long sys_get_child_pids(pid_t *list, size_t limit,
+	size_t *num_children)
 {
 	/* return value of the function */
 	long res;
@@ -24,9 +25,9 @@ asmlinkage long sys_get_child_pids(pid_t *list, size_t limit, size_t *num_childr
 		return -EFAULT;
 	}
 
-	/* TODO : Lock pids list here */
+	/* TODO : Lock pids list here
 
-	/* Iterate on children */
+	Iterate on children */
 	struct task_struct *child;
 
 	list_for_each_entry(child, &current->children, sibling) {
