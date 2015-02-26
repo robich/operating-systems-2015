@@ -1,9 +1,9 @@
-// note: compile this file by simply calling 'make'. a file a.out
+// note: compile this file by simply calling 'make'. A file a.out
 // which you can execute will be created.
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
-# include "syscalls.h"
+#include "syscalls.h"
 
 #define DEBUG 0 // prints all uuids generated
 #define ARRAY_SIZE 20000000 // number of generated uuid
@@ -43,7 +43,7 @@ void *startThread(void *vargp)
 	pthread_mutex_unlock(&running_mutex);
 }
 
-// Returns 1 if array contains at least one repetition, and 0 otherwise
+// Searches for repetitions
 void arrayContainsDouble() {
 	int i;
 	int j;
@@ -51,6 +51,7 @@ void arrayContainsDouble() {
 		for (j = 0; j < ARRAY_SIZE; j++) {
 			if ( (array[i] == array[j]) && (i != j) ) {
 				printf("The element %d was generated twice!\n", array[i]);
+				exit(1);
 			}
 		}
 	}
@@ -73,7 +74,7 @@ int main()
         pthread_create(&tid, NULL, startThread, (void *)i);
     }
     
-    // wait for all threads to finish working
+    // Wait for all threads to finish working
     while (running_threads > 0) {
 		sleep(1);
 	}
