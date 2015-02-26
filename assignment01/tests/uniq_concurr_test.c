@@ -80,9 +80,9 @@ int main()
     
     // Display array
     if (DEBUG) {
-		printf("\nArray: \n");
+		printf("\nGenerated UUIDs: \n");
 		for (i = 0; i < ARRAY_SIZE; i++) {
-			printf("[%d] = %d, ", i, array[i]);
+			printf("%d, ", i, array[i]);
 		}
 	}
 	
