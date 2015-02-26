@@ -132,8 +132,8 @@ alias cpsyscallstogit='sudo cp -r /usr/src/linux/arch/x86/syscalls* /usr/git/ope
 
 alias mkimage='cd /usr/src/linux;make -j2 bzImage'
 alias cpimage='sudo cp /usr/src/linux/arch/x86/boot/bzImage /boot/vmlinuz-3.18.3+'
-alias mkmod='make /usr/src/linux/modules'
-alias mkmodinst='sudo make /usr/src/linux/modules_install'
-alias ldkernel='sudo update-initramfs -k 3.18.3+'
+alias mkmod='cd /usr/src/linux; sudo make modules'
+alias mkmodinst='cd /usr/src/linux; sudo make modules_install'
+alias ldkernel='sudo update-initramfs -k 3.18.3+ -u'
 
 alias updatebashrc='cp /usr/git/operating-systems-2015/assignment01/misc/.bashrc ~'
