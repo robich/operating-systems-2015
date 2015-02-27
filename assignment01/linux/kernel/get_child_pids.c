@@ -60,8 +60,14 @@ asmlinkage long sys_get_child_pids(pid_t *list, size_t limit, size_t *num_childr
 	printk(KERN_DEBUG "Trying to write nr %zu\n", children_count);
 
 	/* Write the number of children in num_children */
-	if (put_user(children_count, num_children) == -EFAULT) {
-		printk(KERN_ERR, "Cannot write number of children\n");
+	long write;
+
+	write = put_user(children_count, num_children);
+
+	printk(KERN_DEBUG "put_user is %lu\n", write);
+
+	if (write == -EFAULT) {
+		printk(KERN_ERR "Cannot write number of children\n");
 		return -EFAULT;
 	}
 
