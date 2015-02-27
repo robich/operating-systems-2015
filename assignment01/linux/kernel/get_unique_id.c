@@ -34,6 +34,11 @@ asmlinkage long sys_get_unique_id(int *uuid)
 	} else {
 		/* Only increment uuid if call is valid */
 		id++;
+		
+		/* Recycling id when reaches the max value */
+		if (id < 0) {
+			id = 0;
+		}
 	}
 
 	return res;
