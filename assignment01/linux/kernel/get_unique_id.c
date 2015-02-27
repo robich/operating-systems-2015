@@ -5,7 +5,7 @@
 #include<linux/spinlock.h>
 
 spinlock_t lock;
-int id;
+long id;
 
 static int __init hi(void)
 {
@@ -34,11 +34,6 @@ asmlinkage long sys_get_unique_id(int *uuid)
 	} else {
 		/* Only increment uuid if call is valid */
 		id++;
-		
-		/* Recycling id when reaches the max value */
-		if (id < 0) {
-			id = 0;
-		}
 	}
 
 	return res;
