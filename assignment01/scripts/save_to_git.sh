@@ -7,7 +7,7 @@ if [ "$(id -u)" != "0" ]; then
 fi
 
 # Save working directory
-$dir=${PWD}
+dir=`pwd`
 
 # Save git credentials for 15 mins
 git config --global credential.helper cache
@@ -31,6 +31,12 @@ sudo git commit
 echo -e "[\e[94mInfo\e[0m] Git pull..."
 sudo git pull
 echo -e "[\e[94mInfo\e[0m] Git push..."
+
+if [ $? -ne 0 ]; then
+    echo -e "\e[31mERROR: Git couldn't connect to the url. Exiting."
+    exit 1
+fi
+
 sudo git push
 
 # Go back to working directory

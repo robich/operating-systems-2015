@@ -7,7 +7,8 @@
 #include<linux/uaccess.h>
 #include<linux/list.h>
 
-asmlinkage long sys_get_child_pids(pid_t *list, size_t limit, size_t *num_children)
+asmlinkage long sys_get_child_pids(pid_t *list, size_t limit,
+	size_t *num_children)
 {
 	/* return value of the function */
 	long res;
@@ -16,6 +17,7 @@ asmlinkage long sys_get_child_pids(pid_t *list, size_t limit, size_t *num_childr
 
 	/* Counter for children tasks */
 	size_t children_count;
+	
 	children_count = 0;
 
 	/* First check on memory validity */
@@ -24,18 +26,17 @@ asmlinkage long sys_get_child_pids(pid_t *list, size_t limit, size_t *num_childr
 		return -EFAULT;
 	}
 
-	/* TODO : Lock pids list here */
+	/* TODO : Lock pids list here
 
-	/* Iterate on children */
+	Iterate on children */
 	struct task_struct *child;
 
 	list_for_each_entry(child, &current->children, sibling) {
 
 		/* Extract pid of child */
 		pid_t child_id;
+		
 		child_id = child->pid;
-
-		printk(KERN_DEBUG "Looking at child pid %zu\n", child_id);
 
 		/* Increment number of children */
 		children_count++;
@@ -53,11 +54,9 @@ asmlinkage long sys_get_child_pids(pid_t *list, size_t limit, size_t *num_childr
 
 	if (children_count > limit) {
 		/* Need to return -ENOBUFFS; */
-		printk(KERN_DEBUG "List is too big to fit !\n");
+		printk(KERN_ERR "List is too big to fit !\n");
 		res = -ENOBUFS;
 	}
-
-	printk(KERN_DEBUG "Trying to write nr %zu\n", children_count);
 
 	/* Write the number of children in num_children */
 	long write;

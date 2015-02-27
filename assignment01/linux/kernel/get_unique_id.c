@@ -5,7 +5,7 @@
 #include<linux/spinlock.h>
 
 spinlock_t lock;
-long id;
+int id;
 
 static int __init hi(void)
 {
