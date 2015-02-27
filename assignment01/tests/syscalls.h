@@ -10,5 +10,5 @@ inline long get_unique_id(int* uuid) {
 }
 
 inline long get_child_pids(pid_t* buf, size_t limit, size_t* num_children) {
-	return syscall(__NR_get_child_pids, buf, limit, &num_children) ? errno : 0;
+	return syscall(__NR_get_child_pids, buf, limit, num_children) ? errno : 0;
 }
