@@ -21,8 +21,9 @@ void *startThread(void *vargp)
     // Store the value argument passed to this thread
     int myid = (int)vargp;
     
-    printf("Thread %d starting...\n", myid);
-    
+    if (DEBUG) {
+    	printf("Thread %d starting...\n", myid);
+    }
     // Where to start filling array
     int start = myid * cells_to_fill;
     int end = start + cells_to_fill;
@@ -31,6 +32,9 @@ void *startThread(void *vargp)
     
     int i;
     for (i = start; i < end; i++) {
+	if (DEBUG) {
+		printf("tid %d running\n");
+	}
 		if (get_unique_id(&uuid) != 0) {
 			printf("get_unique_id returned an error!\n");
 			exit(1);
