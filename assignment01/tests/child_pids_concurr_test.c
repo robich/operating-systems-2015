@@ -6,15 +6,13 @@
 #include "syscalls.h"
 
 #define DEBUG 0 // prints all uuids generated
-#define ARRAY_SIZE 20000000 // number of generated uuid
+#define ITERATIONS_PER_THREAD 10
 #define THREAD_NUMBER 4 // must divide ARRAY_SIZE
-
-const int cells_to_fill = ARRAY_SIZE / THREAD_NUMBER;
 
 volatile int running_threads = 0;
 pthread_mutex_t running_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-int array[ARRAY_SIZE];
+
  
 void *startThread(void *vargp)
 {
@@ -24,43 +22,33 @@ void *startThread(void *vargp)
     if (DEBUG) {
     	printf("Thread %d starting...\n", myid);
     }
-    // Where to start filling array
-    int start = myid * cells_to_fill;
-    int end = start + cells_to_fill;
-    
-    int uuid;
-    
-    int i;
-    for (i = start; i < end; i++) {
-	if (DEBUG) {
-		printf("tid %d running\n");
+
+	if (0) {
+		printf("get_unique_id returned an error!\n");
+		exit(1);
 	}
-		if (get_unique_id(&uuid) != 0) {
-			printf("get_unique_id returned an error!\n");
-			exit(1);
+	
+	int i;
+	for (i = 0; i < ITERATIONS_PER_THREAD; i++) {
+		long res;
+		int child_pid = fork();
+		
+		if (child_pid < 0 )
+			printf("Fork failed %i \n", child_pid);
+		else if (child_pid > 0) {
+			size_t limit = 3;
+			size_t nr_children;
+			pid_t pid_list[limit];
+
+			// CASE : Normal execution, num_children < limit
+			res= get_child_pids(pid_list, limit, &nr_children) ? errno : 0;
+			
 		}
-		array[i] = uuid;
 	}
 	
 	pthread_mutex_lock(&running_mutex);
 	running_threads--;
 	pthread_mutex_unlock(&running_mutex);
-}
-
-// Searches for repetitions
-void arrayContainsDouble() {
-	int i;
-	int j;
-	for (i = 0; i < ARRAY_SIZE; i++) {
-		for (j = 0; j < ARRAY_SIZE; j++) {
-			if ( (array[i] == array[j]) && (i != j) ) {
-				printf("The element %d was generated twice!\n", array[i]);
-				exit(0);
-			}
-		}
-	}
-	
-	printf("\nNo repetition found for %d calls!\n", ARRAY_SIZE);
 }
  
 int main()
@@ -82,16 +70,8 @@ int main()
     while (running_threads > 0) {
 		sleep(1);
 	}
-    
-    // Display array
-    if (DEBUG) {
-		printf("\nGenerated UUIDs: \n");
-		for (i = 0; i < ARRAY_SIZE; i++) {
-			printf("%d, ", i, array[i]);
-		}
-	}
 	
-	arrayContainsDouble();
+	printf("Things look good!\n");
 	
 	pthread_exit(NULL);
     
