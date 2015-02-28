@@ -20,7 +20,7 @@ echo -e "[\e[94mInfo\e[0m] Pulling from git..."
 git pull
 
 if [ $? -ne 0 ]; then
-    echo -e "\e[31mERROR: Git couldn't connect to the url. Exiting."
+    echo -e "\e[31mERROR: Git couldn't connect to the url. Exiting.\e[0m"
     exit 1
 fi
 
