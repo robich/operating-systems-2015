@@ -4,7 +4,8 @@
 #include<linux/init.h>
 #include<linux/spinlock.h>
 
-#define DEFINE_SPINLOCK(uuid_lock)
+spinlock_t uuid_lock;
+DEFINE_SPINLOCK(uuid_lock)
 long id;
 
 asmlinkage long sys_get_unique_id(int *uuid)
