@@ -7,16 +7,7 @@
 #include<linux/uaccess.h>
 #include<linux/list.h>
 
-spinlock_t lock;
-
-static int __init hi(void)
-{
-	spin_lock_init(&lock);
-
-	return 0;
-}
-
-module_init(hi);
+#define DEFINE_SPINLOCK(num_children_lock)
 
 asmlinkage long sys_get_child_pids(pid_t *list, size_t limit,
 	size_t *num_children)
@@ -76,17 +67,17 @@ asmlinkage long sys_get_child_pids(pid_t *list, size_t limit,
 	}
 
 	/* Lock for the writing in num_children */
-	spin_lock(&lock);
+	spin_lock(&num_children_lock);
 
 	if (put_user(children_count, num_children) == -EFAULT) {
 		printk(KERN_ERR "Cannot write number of children\n");
 
-		spin_unlock(&lock);
+		spin_unlock(&num_children_lock);
 
 		return -EFAULT;
 	}
 
-	spin_unlock(&lock);
+	spin_unlock(&num_children_lock);
 
 	return res;
 }
