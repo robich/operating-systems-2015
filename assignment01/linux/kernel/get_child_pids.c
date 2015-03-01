@@ -7,7 +7,8 @@
 #include<linux/uaccess.h>
 #include<linux/list.h>
 
-#define DEFINE_SPINLOCK(num_children_lock)
+spinlock_t num_children_lock;
+DEFINE_SPINLOCK(num_children_lock)
 
 asmlinkage long sys_get_child_pids(pid_t *list, size_t limit,
 	size_t *num_children)
