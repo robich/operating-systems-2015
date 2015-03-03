@@ -10,22 +10,14 @@ long id;
 
 asmlinkage long sys_get_unique_id(int *uuid)
 {
-	/* Lock */
-	spin_lock(&uuid_lock);
 
 	/* Try to write the ID */
-	long res;
-
-	res = put_user(id, uuid);
-
+	long _id;
+	
+	spin_lock(&uuid_lock);
+	_id = id;
+	id++;
 	spin_unlock(&uuid_lock);
 
-	if (res == -EFAULT) {
-		/* printk(KERN_ERR "Trying to access an illegal memory location !\n"); */
-	} else {
-		/* Only increment uuid if call is valid */
-		id++;
-	}
-
-	return res;
+	return put_user(_id, uuid);
 }
