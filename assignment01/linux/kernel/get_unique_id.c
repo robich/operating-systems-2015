@@ -21,7 +21,7 @@ asmlinkage long sys_get_unique_id(int *uuid)
 	spin_unlock(&uuid_lock);
 
 	if (res == -EFAULT) {
-		printk(KERN_ERR "Trying to access an illegal memory location !\n");
+		/* printk(KERN_ERR "Trying to access an illegal memory location !\n"); */
 	} else {
 		/* Only increment uuid if call is valid */
 		id++;
