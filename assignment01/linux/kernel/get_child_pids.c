@@ -26,13 +26,18 @@ asmlinkage long sys_get_child_pids(pid_t *list, size_t limit,
 		return -EFAULT;
 	}
 
-	/* Lock tasklist while iterating */
+	struct task_struct *_current;
+	
+	/* We need to lock tasklist_lock because other processes might work on that list */
+	
 	read_lock(&tasklist_lock);
+	_current = current;
+	read_unlock(&tasklist_lock);
 
 	/* Iterate on children */
 	struct task_struct *child;
 
-	list_for_each_entry(child, &current->children, sibling) {
+	list_for_each_entry(child, &_current->children, sibling) {
 
 		/* Extract pid of child */
 		pid_t child_id;
@@ -47,16 +52,12 @@ asmlinkage long sys_get_child_pids(pid_t *list, size_t limit,
 			if (put_user(child_id, list) == -EFAULT) {
 				/* printk(KERN_ERR "Error while writing children id\n"); */
 
-				read_unlock(&tasklist_lock);
-
 				return -EFAULT;
 			}
 			/* Moves pointer to next memory slot */
 			list++;
 		}
 	}
-
-	read_unlock(&tasklist_lock);
 
 	if (children_count > limit) {
 		/* Need to return -ENOBUFFS; */
