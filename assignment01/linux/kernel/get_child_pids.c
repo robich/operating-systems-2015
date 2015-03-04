@@ -62,7 +62,7 @@ asmlinkage long sys_get_child_pids(pid_t *list, size_t limit,
 	int j;
 	for (j = 0; j < limit; j++) {
 		put_user(array[j], list);
-		list++
+		list++;
 	}
 
 	if (children_count > limit) {
