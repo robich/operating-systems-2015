@@ -1,0 +1,9 @@
+Our solution has nothing fancy, but it seems to work well.
+We have written 2 simple tests:
+	- for get_unique_pids we have 4 POSIX threads that fill an array with the unique ids.
+	  if no two entries are the same we are good :)
+	
+	- for get_child_pids we just check that the kernel doesn't crash when multiple threads call
+	  this syscall at the same time.
+	  
+	The tests are in the tests/ folder.
