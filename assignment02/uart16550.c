@@ -79,6 +79,8 @@ irqreturn_t interrupt_handler(int irq_no, void *data)
 
 static int uart16550_init(void)
 {
+	dprintk("[uart] Loading... uart16550_init()...\n");
+	
         int have_com1, have_com2;
         /*
          * TODO: Write driver initialization code here.
@@ -99,8 +101,6 @@ static int uart16550_init(void)
 	if ((0x3 == behavior) || (0x2 == behavior)) {
 		have_com2 = 1;
 	}
-	
-	dprintk("LOADING UART... INIT\n");
 
         /*
          * Setup a sysfs class & device to make /dev/com1 & /dev/com2 appear.
@@ -108,14 +108,14 @@ static int uart16550_init(void)
         uart16550_class = class_create(THIS_MODULE, "uart16550");
 
         if (have_com1) {
-        	dprintk("have_com1 = true\n");
+        	dprintk("[uart] have_com1 = true\n");
                 /* Setup the hardware device for COM1 */
                 uart16550_hw_setup_device(COM1_BASEPORT, THIS_MODULE->name);
                 /* Create the sysfs info for /dev/com1 */
                 device_create(uart16550_class, NULL, MKDEV(major, 0), NULL, "com1");
         }
         if (have_com2) {
-        	dprintk("have_com2 = true\n");
+        	dprintk("[uart] have_com2 = true\n");
                 /* Setup the hardware device for COM2 */
                 uart16550_hw_setup_device(COM2_BASEPORT, THIS_MODULE->name);
                 /* Create the sysfs info for /dev/com2 */
