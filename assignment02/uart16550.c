@@ -20,6 +20,10 @@ static struct class *uart16550_class = NULL;
  * TODO: Populate major number from module options (when it is given).
  */
 static int major = 42;
+module_param(major, int, 0);
+
+static int behavior = 0x3;
+module_param(behavior, int, 0);
 
 static int uart16550_write(struct file *file, const char *user_buffer,
         size_t size, loff_t *offset)
@@ -82,6 +86,19 @@ static int uart16550_init(void)
          *      module parameters.
          * TODO: Check return values of functions used. Fail gracefully.
          */
+
+	if ((major < 0) || (behavior < 0) || (behavior > 0x3)) {
+		/* Invalid parameters: exit 1 */
+		return -1;
+	}
+
+	if ((0x3 == behavior) || (0x1 == behavior)) {
+		have_com1 = 1; // Set to true
+	}
+
+	if ((0x3 == behavior) || (0x2 == behavior)) {
+		have_com2 = 1;
+	}
 
         /*
          * Setup a sysfs class & device to make /dev/com1 & /dev/com2 appear.
