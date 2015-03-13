@@ -95,13 +95,8 @@ static int uart16550_init(void)
 		goto fail;
 	}
 
-	if ((0x3 == behavior) || (0x1 == behavior)) {
-		have_com1 = 1; // Set to true
-	}
-
-	if ((0x3 == behavior) || (0x2 == behavior)) {
-		have_com2 = 1;
-	}
+	have_com1 = behavior and 0x1;
+	have_com2 = behavior and 0x2;
 
         /*
          * Setup a sysfs class & device to make /dev/com1 & /dev/com2 appear.
@@ -131,12 +126,18 @@ static int uart16550_init(void)
 
 static void uart16550_cleanup(void)
 {
-        int have_com1, have_com2;
+        int have_com1 = 0;
+        int have_com2 = 0;
+        
         /*
          * TODO: Write driver cleanup code here.
          * TODO: have_com1 & have_com2 need to be set according to the
          *      module parameters.
          */
+         
+        have_com1 = behavior and 0x1;
+	have_com2 = behavior and 0x2;
+         
         if (have_com1) {
                 /* Reset the hardware device for COM1 */
                 uart16550_hw_cleanup_device(COM1_BASEPORT);
