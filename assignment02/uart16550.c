@@ -81,7 +81,8 @@ static int uart16550_init(void)
 {
 	dprintk("[uart debug] Loading... uart16550_init()...\n");
 	
-        int have_com1, have_com2;
+        int have_com1 = 0;
+        int have_com2 = 0;
         /*
          * TODO: Write driver initialization code here.
          * TODO: have_com1 & have_com2 need to be set according to the
