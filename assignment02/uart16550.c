@@ -87,7 +87,7 @@ static int uart16550_init(void)
          * TODO: Check return values of functions used. Fail gracefully.
          */
 
-	if ((major < 0) || (behavior < 0) || (behavior > 0x3)) {
+	if ((major < 0) || (behavior < 0x1) || (behavior > 0x3)) {
 		/* Invalid parameters: exit 1 */
 		return -1;
 	}
@@ -99,6 +99,8 @@ static int uart16550_init(void)
 	if ((0x3 == behavior) || (0x2 == behavior)) {
 		have_com2 = 1;
 	}
+	
+	dprintk("LOADING UART... INIT\n");
 
         /*
          * Setup a sysfs class & device to make /dev/com1 & /dev/com2 appear.
@@ -106,12 +108,14 @@ static int uart16550_init(void)
         uart16550_class = class_create(THIS_MODULE, "uart16550");
 
         if (have_com1) {
+        	dprintk("have_com1 = true\n");
                 /* Setup the hardware device for COM1 */
                 uart16550_hw_setup_device(COM1_BASEPORT, THIS_MODULE->name);
                 /* Create the sysfs info for /dev/com1 */
                 device_create(uart16550_class, NULL, MKDEV(major, 0), NULL, "com1");
         }
         if (have_com2) {
+        	dprintk("have_com2 = true\n");
                 /* Setup the hardware device for COM2 */
                 uart16550_hw_setup_device(COM2_BASEPORT, THIS_MODULE->name);
                 /* Create the sysfs info for /dev/com2 */
