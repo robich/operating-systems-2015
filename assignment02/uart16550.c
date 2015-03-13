@@ -89,7 +89,7 @@ static int uart16550_init(void)
 
 	if ((major < 0) || (behavior < 0x1) || (behavior > 0x3)) {
 		/* Invalid parameters: exit 1 */
-		return -1;
+		goto fail;
 	}
 
 	if ((0x3 == behavior) || (0x1 == behavior)) {
@@ -122,6 +122,10 @@ static int uart16550_init(void)
                 device_create(uart16550_class, NULL, MKDEV(major, 1), NULL, "com2");
         }
         return 0;
+        
+        fail:
+        	/* TODO: clean up */
+        	return -1;
 }
 
 static void uart16550_cleanup(void)
