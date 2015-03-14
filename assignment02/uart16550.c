@@ -216,7 +216,7 @@ static int uart16550_init(void)
                 uart_cdev_com1 = cdev_alloc();
 		if (NULL == uart_cdev_com1) {
 			/* Allocation failed */
-			dprintk("[uart debug] cdev_alloc() failed for com1\n");
+			dprintk("[uart debug] cdev_alloc() failed  (com1)\n");
 			goto fail_init;
 		}
 		uart_cdev_com1->ops = &uart_fops;
@@ -224,7 +224,7 @@ static int uart16550_init(void)
 		/* Note: after calling cdev_add, the device is "live" and
 		*  its operations can be called by the kernel */
 		if (cdev_add(uart_cdev_com1, dev_no, 1)) {
-			printk ("[uart debug] Error adding cdev\n");
+			printk ("[uart debug] cdev_add() failed (com1)\n");
 			goto fail_init;
 		}
         }
@@ -248,13 +248,13 @@ static int uart16550_init(void)
                 uart_cdev_com2 = cdev_alloc();
 		if (NULL == uart_cdev_com2) {
 			/* Allocation failed */
-			dprintk("[uart debug] cdev_alloc() failed for com2\n");
+			dprintk("[uart debug] cdev_alloc() failed  (com2)\n");
 			goto fail_init;
 		}
 		uart_cdev_com2->ops = &uart_fops;
 		
 		if (cdev_add(uart_cdev_com2, dev_no, 1)) {
-			printk ("[uart debug] Error adding cdev\n");
+			printk ("[uart debug] cdev_add() failed (com2)\n");
 			goto fail_init;
 		}
         }
