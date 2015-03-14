@@ -19,6 +19,10 @@ MODULE_LICENSE("GPL");
 #endif
 
 static struct class *uart16550_class = NULL;
+
+static struct cdev *uart_cdev_com1;
+static struct cdev *uart_cdev_com2;
+
 /*
  * TODO: Populate major number from module options (when it is given).
  */
@@ -30,6 +34,42 @@ module_param(major, int, 0);
 static int behavior = 0x3;
 module_param(behavior, int, 0);
 
+/* See: http://www.tldp.org/LDP/lkmpg/2.4/html/c577.htm */
+static const struct file_operations uart_fops =
+{
+	.owner	= THIS_MODULE,
+	.open	= uart16550_open,
+	.release= uart16550_release,
+	.write	= uart16550_write,
+	.read	= uart16550_read,
+	.unlocked_ioctl	= uart16550_ioctl,
+};
+
+static int uart16550_ioctl(struct inode *inode, struct file *file, unsigned int ioctl_num, unsigned long ioctl_param) {
+	/* TODO */
+	return 0;
+}
+
+/* Called when a process closes the device file */
+static int uart16550_release(struct inode *inode, struct file *file) {
+	/* TODO */
+	return 0;
+}
+
+static int uart16550_open(struct inode *, struct file *) {
+	/* TODO */
+	return 0;
+}
+
+static int uart16550_read(struct file *filp,
+   char *buffer,    /* The buffer to fill with data */
+   size_t length,   /* The length of the buffer     */
+   loff_t *offset)  /* Our offset in the file       */ {
+   	/* TODO */
+   	return 0;
+   }
+
+/* To write data from userspace to the device */
 static int uart16550_write(struct file *file, const char *user_buffer,
         size_t size, loff_t *offset)
 {
@@ -96,12 +136,14 @@ static int uart16550_init(void)
          */
 
 	if ((major < 0) || (behavior < 0x1) || (behavior > 0x3)) {
-		/* Invalid parameters: exit 1 */
+		/* Invalid parameters */
+		dprintk("[uart debug] Invalid parameters\n");
 		goto fail_init;
 	}
 
 	have_com1 = behavior & 0x1;
 	have_com2 = behavior & 0x2;
+	
 
         /*
          * Setup a sysfs class & device to make /dev/com1 & /dev/com2 appear.
@@ -112,27 +154,55 @@ static int uart16550_init(void)
         	dprintk("[uart debug] have_com1 = true\n");
                 /* Setup the hardware device for COM1 */
                 uart16550_hw_setup_device(COM1_BASEPORT, THIS_MODULE->name);
+                
                 /* Register character device */
 		dev_t dev_no = MKDEV(major, 0);
 		int ret = 0;
 		ret =  register_chrdev_region(dev_no, 1,"com1");
-		if (ret < 0)
-			goto fail_init; 
+		if (ret < 0) {
+			dprintk("[uart debug] An error occured on register_chrdev_region\n");
+			goto fail_init;
+		}
+		
 		/* Create the sysfs info for /dev/com1 */
                 device_create(uart16550_class, NULL, dev_no, NULL, "com1");
+                
+                /* cdev thing */
+                uart_cdev_com1 = cdev_alloc();
+		if (NULL == uart_cdev_com1) {
+			/* Allocation failed */
+			dprintk("[uart debug] cdev_alloc() failed for com1\n");
+			goto fail_init;
+		}
+		uart_cdev_com1->ops = &uart_fops;
+		cdev_add(uart_cdev_com1, dev_no, 1);
         }
         if (have_com2) {
         	dprintk("[uart debug] have_com2 = true\n");
                 /* Setup the hardware device for COM2 */
                 uart16550_hw_setup_device(COM2_BASEPORT, THIS_MODULE->name);
+                
 		/* Register character device */
 		dev_t dev_no = MKDEV(major, 1);
 		int ret = 0;
 		ret = register_chrdev_region(dev_no, 1, "com2");
-		if (ret < 0)
+		if (ret < 0) {
+			dprintk("[uart debug] An error occured on register_chrdev_region\n");
 			goto fail_init;
+		}
+		
                 /* Create the sysfs info for /dev/com2 */
                 device_create(uart16550_class, NULL, dev_no, NULL, "com2");
+                
+                /* cdev thing */
+                uart_cdev_com2 = cdev_alloc();
+		if (NULL == uart_cdev_com2) {
+			/* Allocation failed */
+			dprintk("[uart debug] cdev_alloc() failed for com2\n");
+			goto fail_init;
+		}
+		uart_cdev_com2->ops = &uart_fops;
+		cdev_add(uart_cdev_com2, dev_no, 1);
         }
         return 0;
         
