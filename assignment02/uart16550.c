@@ -124,7 +124,7 @@ static const struct file_operations uart_fops =
 
 static int uart16550_init(void)
 {
-	dprintk("[uart debug] In uart16550_init... called with major=%d behavior=%#08x\n", major, behavior);
+	dprintk("[uart debug] In uart16550_init()... called with major=%d behavior=%#03x\n", major, behavior);
 	
         int have_com1 = 0;
         int have_com2 = 0;
@@ -157,10 +157,8 @@ static int uart16550_init(void)
                 
                 /* Register character device */
 		dev_t dev_no = MKDEV(major, 0);
-		int ret = 0;
-		ret =  register_chrdev_region(dev_no, 1,"com1");
-		if (ret < 0) {
-			dprintk("[uart debug] An error occured on register_chrdev_region\n");
+		if (register_chrdev_region(dev_no, 1,"com1")) {
+			dprintk("[uart debug] An error occured on register_chrdev_region (com1)\n");
 			goto fail_init;
 		}
 		
@@ -172,10 +170,19 @@ static int uart16550_init(void)
 		if (NULL == uart_cdev_com1) {
 			/* Allocation failed */
 			dprintk("[uart debug] cdev_alloc() failed for com1\n");
+			device_destroy(uart16550_class, dev_no);
+			unregister_chrdev_region(dev_no, 1);
 			goto fail_init;
 		}
 		uart_cdev_com1->ops = &uart_fops;
 		cdev_add(uart_cdev_com1, dev_no, 1);
+		
+		if (cdev_add(&uart_cdev_com1, dev_no, 1)) {
+			printk ("[uart debug] Error adding cdev\n");
+			device_destroy(uart16550_class, dev_no);
+			unregister_chrdev_region(dev_no, 1);
+			goto fail_init;
+		}
         }
         if (have_com2) {
         	dprintk("[uart debug] have_com2 = true\n");
@@ -184,10 +191,9 @@ static int uart16550_init(void)
                 
 		/* Register character device */
 		dev_t dev_no = MKDEV(major, 1);
-		int ret = 0;
-		ret = register_chrdev_region(dev_no, 1, "com2");
-		if (ret < 0) {
-			dprintk("[uart debug] An error occured on register_chrdev_region\n");
+		
+		if (register_chrdev_region(dev_no, 1, "com2")) {
+			dprintk("[uart debug] An error occured on register_chrdev_region (com2)\n");
 			goto fail_init;
 		}
 		
@@ -199,10 +205,18 @@ static int uart16550_init(void)
 		if (NULL == uart_cdev_com2) {
 			/* Allocation failed */
 			dprintk("[uart debug] cdev_alloc() failed for com2\n");
+			device_destroy(uart16550_class, dev_no);
+			unregister_chrdev_region(dev_no, 1);
 			goto fail_init;
 		}
 		uart_cdev_com2->ops = &uart_fops;
-		cdev_add(uart_cdev_com2, dev_no, 1);
+		
+		if (cdev_add(&uart_cdev_com2, dev_no, 1)) {
+			printk ("[uart debug] Error adding cdev\n");
+			device_destroy(uart16550_class, dev_no);
+			unregister_chrdev_region(dev_no, 1);
+			goto fail_init;
+		}
         }
         return 0;
         
