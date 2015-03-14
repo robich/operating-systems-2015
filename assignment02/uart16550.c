@@ -42,7 +42,7 @@ static const struct file_operations uart_fops =
 	.release= uart16550_release,
 	.write	= uart16550_write,
 	.read	= uart16550_read,
-	.unlocked_ioctl	= uart16550_ioctl,
+	.unlocked_ioctl	= uart16550_ioctl
 };
 
 static int uart16550_ioctl(struct inode *inode, struct file *file, unsigned int ioctl_num, unsigned long ioctl_param) {
