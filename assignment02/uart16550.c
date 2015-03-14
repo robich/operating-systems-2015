@@ -34,17 +34,6 @@ module_param(major, int, 0);
 static int behavior = 0x3;
 module_param(behavior, int, 0);
 
-/* See: http://www.tldp.org/LDP/lkmpg/2.4/html/c577.htm */
-static const struct file_operations uart_fops =
-{
-	.owner	= THIS_MODULE,
-	.open	= uart16550_open,
-	.release= uart16550_release,
-	.write	= uart16550_write,
-	.read	= uart16550_read,
-	.unlocked_ioctl	= uart16550_ioctl
-};
-
 static int uart16550_ioctl(struct inode *inode, struct file *file, unsigned int ioctl_num, unsigned long ioctl_param) {
 	/* TODO */
 	return 0;
@@ -121,6 +110,17 @@ irqreturn_t interrupt_handler(int irq_no, void *data)
 
         return IRQ_HANDLED;
 }
+
+/* See: http://www.tldp.org/LDP/lkmpg/2.4/html/c577.htm */
+static const struct file_operations uart_fops =
+{
+	.owner	= THIS_MODULE,
+	.open	= uart16550_open,
+	.release= uart16550_release,
+	.write	= uart16550_write,
+	.read	= uart16550_read,
+	.unlocked_ioctl	= uart16550_ioctl
+};
 
 static int uart16550_init(void)
 {
