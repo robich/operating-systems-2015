@@ -124,7 +124,7 @@ static const struct file_operations uart_fops =
 
 static int uart16550_init(void)
 {
-	dprintk("[uart debug] In uart16550_init... called with major=%d minor=%#08x\n", major, minor);
+	dprintk("[uart debug] In uart16550_init... called with major=%d behavior=%#08x\n", major, behavior);
 	
         int have_com1 = 0;
         int have_com2 = 0;
