@@ -84,7 +84,7 @@ irqreturn_t interrupt_handler(int irq_no, void *data)
 
 static int uart16550_init(void)
 {
-	dprintk("[uart debug] Loading... uart16550_init()...\n");
+	dprintk("[uart debug] In uart16550_init...\n");
 	
         int have_com1 = 0;
         int have_com2 = 0;
@@ -143,6 +143,9 @@ static int uart16550_init(void)
 
 static void uart16550_cleanup(void)
 {
+	
+	dprintk("[uart debug] In uart16550_cleanup...\n");
+	
         int have_com1 = 0;
         int have_com2 = 0;
         
