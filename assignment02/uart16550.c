@@ -2,6 +2,8 @@
 #include <linux/module.h>
 #include <linux/device.h>
 #include <linux/kdev_t.h>
+#include <linux/fs.h>
+#include <linux/types.h>
 #include "uart16550.h"
 #include "uart16550_hw.h"
 
@@ -19,6 +21,8 @@ static struct class *uart16550_class = NULL;
 /*
  * TODO: Populate major number from module options (when it is given).
  */
+
+/* Identifies the driver associated with the device */
 static int major = 42;
 module_param(major, int, 0);
 
@@ -92,7 +96,7 @@ static int uart16550_init(void)
 
 	if ((major < 0) || (behavior < 0x1) || (behavior > 0x3)) {
 		/* Invalid parameters: exit 1 */
-		goto fail;
+		goto fail_init;
 	}
 
 	have_com1 = behavior and 0x1;
@@ -107,19 +111,31 @@ static int uart16550_init(void)
         	dprintk("[uart debug] have_com1 = true\n");
                 /* Setup the hardware device for COM1 */
                 uart16550_hw_setup_device(COM1_BASEPORT, THIS_MODULE->name);
-                /* Create the sysfs info for /dev/com1 */
-                device_create(uart16550_class, NULL, MKDEV(major, 0), NULL, "com1");
+                /* Register character device */
+		dev_t dev_no = MKDEV(major, 0);
+		int ret = 0;
+		ret =  register_chrdev_region(dev_no, 1,"com1");
+		if (ret < 0)
+			goto fail_init; 
+		/* Create the sysfs info for /dev/com1 */
+                device_create(uart16550_class, NULL, dev_no, NULL, "com1");
         }
         if (have_com2) {
         	dprintk("[uart debug] have_com2 = true\n");
                 /* Setup the hardware device for COM2 */
                 uart16550_hw_setup_device(COM2_BASEPORT, THIS_MODULE->name);
+		/* Register character device */
+		dev_t dev_no = MKDEV(major, 1);
+		int ret = 0;
+		ret = register_chrdev_region(dev_no, 1, "com2");
+		if (ret < 0)
+			goto fail_init;
                 /* Create the sysfs info for /dev/com2 */
-                device_create(uart16550_class, NULL, MKDEV(major, 1), NULL, "com2");
+                device_create(uart16550_class, NULL, dev_no, NULL, "com2");
         }
         return 0;
         
-        fail:
+        fail_init:
         	/* TODO: clean up */
         	return -1;
 }
@@ -141,14 +157,20 @@ static void uart16550_cleanup(void)
         if (have_com1) {
                 /* Reset the hardware device for COM1 */
                 uart16550_hw_cleanup_device(COM1_BASEPORT);
+		/* Unregister character device */
+		dev_t dev_no = MKDEV(major, 0);
+		unregister_chrdev_region(dev_no, 1);
                 /* Remove the sysfs info for /dev/com1 */
-                device_destroy(uart16550_class, MKDEV(major, 0));
+                device_destroy(uart16550_class, dev_no);
         }
         if (have_com2) {
                 /* Reset the hardware device for COM2 */
                 uart16550_hw_cleanup_device(COM2_BASEPORT);
+		/* Imregister character device */
+		dev_t dev_no = MKDEV(major, 1);
+		unregister_chrdev_region(dev_no, 1);
                 /* Remove the sysfs info for /dev/com2 */
-                device_destroy(uart16550_class, MKDEV(major, 1));
+                device_destroy(uart16550_class, dev_no);
         }
 
         /*
