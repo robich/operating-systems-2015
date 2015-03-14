@@ -45,7 +45,7 @@ static int uart16550_release(struct inode *inode, struct file *file) {
 	return 0;
 }
 
-static int uart16550_open(struct inode *, struct file *) {
+static int uart16550_open(struct inode * inode, struct file * file) {
 	/* TODO */
 	return 0;
 }
