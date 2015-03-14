@@ -173,11 +173,10 @@ static int uart16550_init(void)
 			goto fail_init;
 		}
 		uart_cdev_com1->ops = &uart_fops;
-		cdev_add(uart_cdev_com1, dev_no, 1);
 		
 		/* Note: after calling cdev_add, the device is "live" and
 		*  its operations can be called by the kernel */
-		if (cdev_add(&uart_cdev_com1, dev_no, 1)) {
+		if (cdev_add(uart_cdev_com1, dev_no, 1)) {
 			printk ("[uart debug] Error adding cdev\n");
 			goto fail_init;
 		}
@@ -207,7 +206,7 @@ static int uart16550_init(void)
 		}
 		uart_cdev_com2->ops = &uart_fops;
 		
-		if (cdev_add(&uart_cdev_com2, dev_no, 1)) {
+		if (cdev_add(uart_cdev_com2, dev_no, 1)) {
 			printk ("[uart debug] Error adding cdev\n");
 			goto fail_init;
 		}
@@ -245,7 +244,7 @@ static void uart16550_cleanup(void)
                 /* Remove the sysfs info for /dev/com1 */
                 device_destroy(uart16550_class, dev_no);
                 /* Deallocate struct */
-                cdev_del(&uart_cdev_com1);
+                cdev_del(uart_cdev_com1);
         }
         if (have_com2) {
                 /* Reset the hardware device for COM2 */
@@ -256,7 +255,7 @@ static void uart16550_cleanup(void)
                 /* Remove the sysfs info for /dev/com2 */
                 device_destroy(uart16550_class, dev_no);
                 /* Deallocate struct */
-                cdev_del(&uart_cdev_com2);
+                cdev_del(uart_cdev_com2);
         }
 
         /*
