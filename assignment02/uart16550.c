@@ -3,6 +3,7 @@
 #include <linux/device.h>
 #include <linux/kdev_t.h>
 #include <linux/fs.h>
+#include <linux/cdev.h>
 #include <linux/types.h>
 #include "uart16550.h"
 #include "uart16550_hw.h"
@@ -99,8 +100,8 @@ static int uart16550_init(void)
 		goto fail_init;
 	}
 
-	have_com1 = behavior and 0x1;
-	have_com2 = behavior and 0x2;
+	have_com1 = behavior & 0x1;
+	have_com2 = behavior & 0x2;
 
         /*
          * Setup a sysfs class & device to make /dev/com1 & /dev/com2 appear.
@@ -151,8 +152,8 @@ static void uart16550_cleanup(void)
          *      module parameters.
          */
          
-        have_com1 = behavior and 0x1;
-	have_com2 = behavior and 0x2;
+        have_com1 = behavior & 0x1;
+	have_com2 = behavior & 0x2;
          
         if (have_com1) {
                 /* Reset the hardware device for COM1 */
