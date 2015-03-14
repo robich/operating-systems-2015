@@ -122,6 +122,53 @@ static const struct file_operations uart_fops =
 	.unlocked_ioctl	= uart16550_ioctl
 };
 
+static void uart16550_cleanup(void)
+{
+	
+	dprintk("[uart debug] In uart16550_cleanup...\n");
+	
+        int have_com1 = 0;
+        int have_com2 = 0;
+        
+        /*
+         * TODO: Write driver cleanup code here.
+         * TODO: have_com1 & have_com2 need to be set according to the
+         *      module parameters.
+         */
+         
+        have_com1 = behavior & 0x1;
+	have_com2 = behavior & 0x2;
+         
+        if (have_com1) {
+                /* Reset the hardware device for COM1 */
+                uart16550_hw_cleanup_device(COM1_BASEPORT);
+		/* Unregister character device */
+		dev_t dev_no = MKDEV(major, 0);
+		unregister_chrdev_region(dev_no, 1);
+                /* Remove the sysfs info for /dev/com1 */
+                device_destroy(uart16550_class, dev_no);
+                /* Deallocate struct */
+                cdev_del(uart_cdev_com1);
+        }
+        if (have_com2) {
+                /* Reset the hardware device for COM2 */
+                uart16550_hw_cleanup_device(COM2_BASEPORT);
+		/* Imregister character device */
+		dev_t dev_no = MKDEV(major, 1);
+		unregister_chrdev_region(dev_no, 1);
+                /* Remove the sysfs info for /dev/com2 */
+                device_destroy(uart16550_class, dev_no);
+                /* Deallocate struct */
+                cdev_del(uart_cdev_com2);
+        }
+
+        /*
+         * Cleanup the sysfs device class.
+         */
+        class_unregister(uart16550_class);
+        class_destroy(uart16550_class);
+}
+
 static int uart16550_init(void)
 {
 	dprintk("[uart debug] In uart16550_init()... called with major=%d behavior=%#03x\n", major, behavior);
@@ -216,53 +263,6 @@ static int uart16550_init(void)
         fail_init:
         	uart16550_cleanup();
         	return -1;
-}
-
-static void uart16550_cleanup(void)
-{
-	
-	dprintk("[uart debug] In uart16550_cleanup...\n");
-	
-        int have_com1 = 0;
-        int have_com2 = 0;
-        
-        /*
-         * TODO: Write driver cleanup code here.
-         * TODO: have_com1 & have_com2 need to be set according to the
-         *      module parameters.
-         */
-         
-        have_com1 = behavior & 0x1;
-	have_com2 = behavior & 0x2;
-         
-        if (have_com1) {
-                /* Reset the hardware device for COM1 */
-                uart16550_hw_cleanup_device(COM1_BASEPORT);
-		/* Unregister character device */
-		dev_t dev_no = MKDEV(major, 0);
-		unregister_chrdev_region(dev_no, 1);
-                /* Remove the sysfs info for /dev/com1 */
-                device_destroy(uart16550_class, dev_no);
-                /* Deallocate struct */
-                cdev_del(uart_cdev_com1);
-        }
-        if (have_com2) {
-                /* Reset the hardware device for COM2 */
-                uart16550_hw_cleanup_device(COM2_BASEPORT);
-		/* Imregister character device */
-		dev_t dev_no = MKDEV(major, 1);
-		unregister_chrdev_region(dev_no, 1);
-                /* Remove the sysfs info for /dev/com2 */
-                device_destroy(uart16550_class, dev_no);
-                /* Deallocate struct */
-                cdev_del(uart_cdev_com2);
-        }
-
-        /*
-         * Cleanup the sysfs device class.
-         */
-        class_unregister(uart16550_class);
-        class_destroy(uart16550_class);
 }
 
 module_init(uart16550_init)
