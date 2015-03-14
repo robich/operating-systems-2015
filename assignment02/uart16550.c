@@ -170,17 +170,15 @@ static int uart16550_init(void)
 		if (NULL == uart_cdev_com1) {
 			/* Allocation failed */
 			dprintk("[uart debug] cdev_alloc() failed for com1\n");
-			device_destroy(uart16550_class, dev_no);
-			unregister_chrdev_region(dev_no, 1);
 			goto fail_init;
 		}
 		uart_cdev_com1->ops = &uart_fops;
 		cdev_add(uart_cdev_com1, dev_no, 1);
 		
+		/* Note: after calling cdev_add, the device is "live" and
+		*  its operations can be called by the kernel */
 		if (cdev_add(&uart_cdev_com1, dev_no, 1)) {
 			printk ("[uart debug] Error adding cdev\n");
-			device_destroy(uart16550_class, dev_no);
-			unregister_chrdev_region(dev_no, 1);
 			goto fail_init;
 		}
         }
@@ -205,23 +203,19 @@ static int uart16550_init(void)
 		if (NULL == uart_cdev_com2) {
 			/* Allocation failed */
 			dprintk("[uart debug] cdev_alloc() failed for com2\n");
-			device_destroy(uart16550_class, dev_no);
-			unregister_chrdev_region(dev_no, 1);
 			goto fail_init;
 		}
 		uart_cdev_com2->ops = &uart_fops;
 		
 		if (cdev_add(&uart_cdev_com2, dev_no, 1)) {
 			printk ("[uart debug] Error adding cdev\n");
-			device_destroy(uart16550_class, dev_no);
-			unregister_chrdev_region(dev_no, 1);
 			goto fail_init;
 		}
         }
         return 0;
         
         fail_init:
-        	/* TODO: clean up */
+        	uart16550_cleanup();
         	return -1;
 }
 
@@ -250,6 +244,8 @@ static void uart16550_cleanup(void)
 		unregister_chrdev_region(dev_no, 1);
                 /* Remove the sysfs info for /dev/com1 */
                 device_destroy(uart16550_class, dev_no);
+                /* Deallocate struct */
+                cdev_del(&uart_cdev_com1);
         }
         if (have_com2) {
                 /* Reset the hardware device for COM2 */
@@ -259,6 +255,8 @@ static void uart16550_cleanup(void)
 		unregister_chrdev_region(dev_no, 1);
                 /* Remove the sysfs info for /dev/com2 */
                 device_destroy(uart16550_class, dev_no);
+                /* Deallocate struct */
+                cdev_del(&uart_cdev_com2);
         }
 
         /*
