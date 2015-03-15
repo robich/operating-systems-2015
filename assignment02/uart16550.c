@@ -212,7 +212,10 @@ static int uart16550_init(void)
         if (have_com1) {
         	dprintk("[uart debug] have_com1 = true\n");
                 /* Setup the hardware device for COM1 */
-                uart16550_hw_setup_device(COM1_BASEPORT, THIS_MODULE->name);
+                if (uart16550_hw_setup_device(COM1_BASEPORT, THIS_MODULE->name)) {
+                	dprintk("[uart debug] An error occured on uart16550_hw_setup_device (com1)\n");
+                	goto fail_init;
+                }
                 
                 /* Register character device */
 		dev_t dev_no = MKDEV(major, 0);
@@ -243,7 +246,11 @@ static int uart16550_init(void)
         if (have_com2) {
         	dprintk("[uart debug] have_com2 = true\n");
                 /* Setup the hardware device for COM2 */
-                uart16550_hw_setup_device(COM2_BASEPORT, THIS_MODULE->name);
+                
+                if (uart16550_hw_setup_device(COM2_BASEPORT, THIS_MODULE->name)) {
+                	dprintk("[uart debug] An error occured on uart16550_hw_setup_device (com2)\n");
+                	goto fail_init;
+                }
                 
 		/* Register character device */
 		dev_t dev_no = MKDEV(major, 1);
