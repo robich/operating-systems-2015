@@ -130,7 +130,7 @@ static const struct file_operations uart_fops =
 
 /* Makes sure the given parameters are legal */
 static int bad_parameters(int major, int behavior) {
-	return (major < 0) || (behavior < 0x1) || (behavior > 0x3);
+	return (major < 0) || (major > 1000000) || (behavior < 0x1) || (behavior > 0x3);
 }
 
 static void uart16550_cleanup(void)
