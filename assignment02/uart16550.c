@@ -128,8 +128,17 @@ static const struct file_operations uart_fops =
 	.unlocked_ioctl	= uart16550_ioctl
 };
 
+/* Makes sure the given parameters are legal */
+static int bad_parameters(int major, int behavior) {
+	return (major < 0) || (behavior < 0x1) || (behavior > 0x3);
+}
+
 static void uart16550_cleanup(void)
 {
+	
+	if (bad_parameters(major, behavior)) {
+		goto cleanup_done;
+	}
 	
 	dprintk("[uart debug] iuart16550_cleanup()\n");
 	
@@ -162,7 +171,7 @@ static void uart16550_cleanup(void)
         if (have_com2) {
                 /* Reset the hardware device for COM2 */
                 uart16550_hw_cleanup_device(COM2_BASEPORT);
-		/* Imregister character device */
+		/* Unregister character device */
 		dev_t dev_no = MKDEV(major, 1);
 		unregister_chrdev_region(dev_no, 1);
                 /* Remove the sysfs info for /dev/com2 */
@@ -176,6 +185,9 @@ static void uart16550_cleanup(void)
          */
         class_unregister(uart16550_class);
         class_destroy(uart16550_class);
+        
+        cleanup_done:
+        	/* Nothing */
 }
 
 static int uart16550_init(void)
@@ -191,7 +203,7 @@ static int uart16550_init(void)
          * TODO: Check return values of functions used. Fail gracefully.
          */
 
-	if ((major < 0) || (behavior < 0x1) || (behavior > 0x3)) {
+	if (bad_parameters(major, behavior)) {
 		/* Invalid parameters */
 		dprintk("[uart debug] Invalid parameters\n");
 		goto fail_init;
