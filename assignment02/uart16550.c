@@ -136,11 +136,11 @@ static int bad_parameters(int major, int behavior) {
 static void uart16550_cleanup(void)
 {
 	
+	dprintk("[uart debug] iuart16550_cleanup()\n");
+	
 	if (bad_parameters(major, behavior)) {
 		goto cleanup_done;
 	}
-	
-	dprintk("[uart debug] iuart16550_cleanup()\n");
 	
         int have_com1 = 0;
         int have_com2 = 0;
