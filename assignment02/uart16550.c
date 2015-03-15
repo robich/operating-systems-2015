@@ -142,8 +142,11 @@ static void uart16550_cleanup(void)
          *      module parameters.
          */
          
-        have_com1 = behavior & 0x1;
-	have_com2 = behavior & 0x2;
+        /* UART16550_COM1_SELECTED is 0x1 */
+	have_com1 = behavior & UART16550_COM1_SELECTED;
+	
+	/* UART16550_COM2_SELECTED is 0x2 */
+	have_com2 = behavior & UART16550_COM2_SELECTED;
          
         if (have_com1) {
                 /* Reset the hardware device for COM1 */
@@ -193,9 +196,12 @@ static int uart16550_init(void)
 		dprintk("[uart debug] Invalid parameters\n");
 		goto fail_init;
 	}
-
-	have_com1 = behavior & 0x1;
-	have_com2 = behavior & 0x2;
+	
+	/* UART16550_COM1_SELECTED is 0x1 */
+	have_com1 = behavior & UART16550_COM1_SELECTED;
+	
+	/* UART16550_COM2_SELECTED is 0x2 */
+	have_com2 = behavior & UART16550_COM2_SELECTED;
 	
 
         /*
