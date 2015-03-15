@@ -186,8 +186,7 @@ static void uart16550_cleanup(void)
         class_unregister(uart16550_class);
         class_destroy(uart16550_class);
         
-        cleanup_done:
-        	/* Nothing */
+        cleanup_done: /* Nothing */ ;
 }
 
 static int uart16550_init(void)
