@@ -36,17 +36,20 @@ module_param(behavior, int, 0);
 
 static int uart16550_ioctl(struct inode *inode, struct file *file, unsigned int ioctl_num, unsigned long ioctl_param) {
 	/* TODO */
+	dprintk("[uart debug] uart16550_ioctl()\n");
 	return 0;
 }
 
 /* Called when a process closes the device file */
 static int uart16550_release(struct inode *inode, struct file *file) {
 	/* TODO */
+	dprintk("[uart debug] uart16550_release()\n");
 	return 0;
 }
 
 static int uart16550_open(struct inode * inode, struct file * file) {
 	/* TODO */
+	dprintk("[uart debug] uart16550_open()\n");
 	return 0;
 }
 
@@ -55,6 +58,7 @@ static int uart16550_read(struct file *filp,
    size_t length,   /* The length of the buffer     */
    loff_t *offset)  /* Our offset in the file       */ {
    	/* TODO */
+   	dprintk("[uart debug] uart16550_read()\n");
    	return 0;
    }
 
@@ -62,6 +66,7 @@ static int uart16550_read(struct file *filp,
 static int uart16550_write(struct file *file, const char *user_buffer,
         size_t size, loff_t *offset)
 {
+	dprintk("[uart debug] uart16550_write()\n");
         int bytes_copied;
         uint32_t device_port;
         /*
@@ -79,6 +84,7 @@ static int uart16550_write(struct file *file, const char *user_buffer,
 
 irqreturn_t interrupt_handler(int irq_no, void *data)
 {
+	dprintk("[uart debug] interrupt_handler()\n");
         int device_status;
         uint32_t device_port;
         /*
@@ -125,7 +131,7 @@ static const struct file_operations uart_fops =
 static void uart16550_cleanup(void)
 {
 	
-	dprintk("[uart debug] In uart16550_cleanup...\n");
+	dprintk("[uart debug] iuart16550_cleanup()\n");
 	
         int have_com1 = 0;
         int have_com2 = 0;
@@ -171,7 +177,7 @@ static void uart16550_cleanup(void)
 
 static int uart16550_init(void)
 {
-	dprintk("[uart debug] In uart16550_init()... called with major=%d behavior=%#03x\n", major, behavior);
+	dprintk("[uart debug] In uart16550_init() called with major=%d behavior=%#03x\n", major, behavior);
 	
         int have_com1 = 0;
         int have_com2 = 0;
