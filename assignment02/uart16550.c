@@ -5,6 +5,7 @@
 #include <linux/fs.h>
 #include <linux/cdev.h>
 #include <linux/types.h>
+#include <linux/ioctl.h>
 #include "uart16550.h"
 #include "uart16550_hw.h"
 
@@ -48,8 +49,10 @@ static int uart16550_release(struct inode *inode, struct file *file) {
 }
 
 static int uart16550_open(struct inode * inode, struct file * file) {
-	/* TODO */
+	/* TODO Not sure, just trying */
 	dprintk("[uart debug] uart16550_open()\n");
+	struct serial_dev *dev = container_of(inode->i_cdev, struct serial_dev, cdev);
+	file->private_data = dev;
 	return 0;
 }
 
