@@ -53,8 +53,9 @@ static int uart16550_release(struct inode *inode, struct file *file) {
 static int uart16550_open(struct inode * inode, struct file * file) {
 	/* TODO Not sure, just trying */
 	dprintk("[uart debug] uart16550_open()\n");
-	struct serial_dev *dev = container_of(inode->i_cdev, struct serial_dev, cdev);
-	file->private_data = dev;
+	
+	struct device_data *data = container_of(inode->i_cdev, struct device_data, cdev);
+	file->private_data = data;
 	return 0;
 }
 
