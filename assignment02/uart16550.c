@@ -9,6 +9,8 @@
 #include "uart16550.h"
 #include "uart16550_hw.h"
 
+#define MODULE_NAME	"uart16550"
+
 MODULE_DESCRIPTION("Uart16550 driver");
 MODULE_LICENSE("GPL");
 
@@ -233,7 +235,7 @@ static int uart16550_init(void)
                 
                 /* Register character device */
 		dev_t dev_no = MKDEV(major, 0);
-		if (register_chrdev_region(dev_no, 1,"com1")) {
+		if (register_chrdev_region(dev_no, 1, MODULE_NAME)) {
 			dprintk("[uart debug] An error occured on register_chrdev_region (com1)\n");
 			goto fail_init;
 		}
@@ -269,7 +271,7 @@ static int uart16550_init(void)
 		/* Register character device */
 		dev_t dev_no = MKDEV(major, 1);
 		
-		if (register_chrdev_region(dev_no, 1, "com2")) {
+		if (register_chrdev_region(dev_no, 1, MODULE_NAME)) {
 			dprintk("[uart debug] An error occured on register_chrdev_region (com2)\n");
 			goto fail_init;
 		}
