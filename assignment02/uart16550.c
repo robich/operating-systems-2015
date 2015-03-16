@@ -6,6 +6,7 @@
 #include <linux/cdev.h>
 #include <linux/types.h>
 #include <linux/ioctl.h>
+#include <linux/kfifo.h>
 #include "uart16550.h"
 #include "uart16550_hw.h"
 
@@ -25,6 +26,20 @@ static struct class *uart16550_class = NULL;
 
 static struct cdev *uart_cdev_com1;
 static struct cdev *uart_cdev_com2;
+
+struct device_data {
+	struct cdev cdev;
+	int baseport;
+	char read_buffer[FIFO_SIZE];
+	char write_buffer[FIFO_SIZE];
+	atomic_t read_fill;
+	atomic_t write_fill;
+	int read_get;
+	int read_put;
+	int write_put;
+	int write_get;
+	wait_queue_head_t wq_reads, wq_writes;
+} devs[2];
 
 /*
  * TODO: Populate major number from module options (when it is given).
