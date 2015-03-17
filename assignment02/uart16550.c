@@ -7,7 +7,9 @@
 #include <linux/types.h>
 #include <linux/ioctl.h>
 #include <linux/kfifo.h>
-#include <linux/shed.h>
+#include <linux/sched.h>
+#include <linux/wait.h>
+#include <linux/interrupt.h>
 #include "uart16550.h"
 #include "uart16550_hw.h"
 
