@@ -101,7 +101,7 @@ static int uart16550_read(struct file *file,
                 data->read_get++; data->read_get %= FIFO_SIZE;
                 i++; size--; atomic_dec(&data->read_fill);
         }
-        return i
+        return i;
    }
 
 /* To write data from userspace to the device */
