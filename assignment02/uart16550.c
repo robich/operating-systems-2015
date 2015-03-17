@@ -78,7 +78,7 @@ static int uart16550_open(struct inode * inode, struct file * file) {
 }
 
 static int uart16550_read(struct file *file,
-   char *buffer,    /* The buffer to fill with data */
+   char *user_buffer,    /* The buffer to fill with data */
    size_t size,   /* The length of the buffer     */
    loff_t *offset)  /* Our offset in the file       */ {
    	/* TODO */
@@ -98,7 +98,7 @@ static int uart16550_read(struct file *file,
                 if (put_user(data->read_buffer[data->read_get], 
                                                 &user_buffer[i])) 
                         return -EFAULT;
-                data->read_get++; data->read_get %= BUFFER_SIZE;
+                data->read_get++; data->read_get %= FIFO_SIZE;
                 i++; size--; atomic_dec(&data->read_fill);
         }
         return i
@@ -131,18 +131,18 @@ static int uart16550_write(struct file *file, const char *user_buffer,
         
         /* wait until space is available in buffer */
         if (wait_event_interruptible(data->wq_writes, 
-                                atomic_read(&data->write_fill) < BUFFER_SIZE))
+                                atomic_read(&data->write_fill) < FIFO_SIZE))
                 return -ERESTARTSYS;
 
 
 
-        while ((atomic_read(&data->write_fill) < BUFFER_SIZE) && size) {
+        while ((atomic_read(&data->write_fill) < FIFO_SIZE) && size) {
                 char c;
                 if (get_user(c, &user_buffer[i])) 
                         return -EFAULT;
 
                 data->write_buffer[data->write_put] = c;
-                data->write_put=(data->write_put+1) % BUFFER_SIZE;
+                data->write_put=(data->write_put+1) % FIFO_SIZE;
                 i++;
                 size--;
                 atomic_inc(&data->write_fill);
