@@ -74,7 +74,7 @@ static int uart16550_open(struct inode * inode, struct file * file) {
 	return 0;
 }
 
-static int uart16550_read(struct file *filp,
+static int uart16550_read(struct file *file,
    char *buffer,    /* The buffer to fill with data */
    size_t length,   /* The length of the buffer     */
    loff_t *offset)  /* Our offset in the file       */ {
