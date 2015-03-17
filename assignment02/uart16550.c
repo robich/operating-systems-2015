@@ -292,6 +292,18 @@ static int uart16550_init(void)
 
         if (have_com1) {
         	dprintk("[uart debug] have_com1 = true\n");
+        	
+        	devs[0].baseport = COM1_BASEPORT;
+		init_waitqueue_head(&devs[0].wq_reads);
+		init_waitqueue_head(&devs[0].wq_writes);
+		if (request_irq(COM1_IRQ, irq_handle, IRQF_SHARED, MODULE_NAME, &devs[0])) {
+			dprintk("[uart debug] request_irq() failed (com1)\n");
+			goto fail_init;;
+		}
+		/*enable interrupts*/
+		outb(0x08, COM2_BASEPORT + 4);
+		outb(0x03, COM2_BASEPORT + 1);
+        	
                 /* Setup the hardware device for COM1 */
                 if (uart16550_hw_setup_device(COM1_BASEPORT, THIS_MODULE->name)) {
                 	dprintk("[uart debug] An error occured on uart16550_hw_setup_device (com1)\n");
@@ -326,6 +338,18 @@ static int uart16550_init(void)
         }
         if (have_com2) {
         	dprintk("[uart debug] have_com2 = true\n");
+        	
+        	devs[1].baseport = COM2_BASEPORT;
+		init_waitqueue_head(&devs[1].wq_reads);
+		init_waitqueue_head(&devs[1].wq_writes);
+		if (request_irq(COM2_IRQ, irq_handle, IRQF_SHARED, MODULE_NAME, &devs[1])) {
+			dprintk("[uart debug] request_irq() failed (com2)\n");
+			goto fail_init;
+		}
+		/*enable interrupts*/
+		outb(0x08, COM2_BASEPORT + 4);
+		outb(0x03, COM2_BASEPORT + 1);
+        	
                 /* Setup the hardware device for COM2 */
                 
                 if (uart16550_hw_setup_device(COM2_BASEPORT, THIS_MODULE->name)) {
