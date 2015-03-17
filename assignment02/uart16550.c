@@ -7,6 +7,7 @@
 #include <linux/types.h>
 #include <linux/ioctl.h>
 #include <linux/kfifo.h>
+#include <linux/shed.h>
 #include "uart16550.h"
 #include "uart16550_hw.h"
 
