@@ -80,7 +80,25 @@ static int uart16550_read(struct file *filp,
    loff_t *offset)  /* Our offset in the file       */ {
    	/* TODO */
    	dprintk("[uart debug] uart16550_read()\n");
-   	return 0;
+   	
+   	/* DO NOT leave unchanged */
+   	int i = 0;
+        struct device_data *data =
+                (struct device_data *) file->private_data;
+
+        /* wait until data is available in buffer */
+        if (wait_event_interruptible(data->wq_reads, 
+                                        atomic_read(&data->read_fill) > 0))
+                return -ERESTARTSYS;
+
+        while ((atomic_read(&data->read_fill) > 0) && size) {
+                if (put_user(data->read_buffer[data->read_get], 
+                                                &user_buffer[i])) 
+                        return -EFAULT;
+                data->read_get++; data->read_get %= BUFFER_SIZE;
+                i++; size--; atomic_dec(&data->read_fill);
+        }
+        return i
    }
 
 /* To write data from userspace to the device */
@@ -88,8 +106,8 @@ static int uart16550_write(struct file *file, const char *user_buffer,
         size_t size, loff_t *offset)
 {
 	dprintk("[uart debug] uart16550_write()\n");
-        int bytes_copied;
-        uint32_t device_port;
+        /*int bytes_copied;
+        uint32_t device_port;*/
         /*
          * TODO: Write the code that takes the data provided by the
          *      user from userspace and stores it in the kernel
@@ -98,9 +116,37 @@ static int uart16550_write(struct file *file, const char *user_buffer,
          *      that fit in the outgoing buffer.
          */
 
-        uart16550_hw_force_interrupt_reemit(device_port);
+        /*uart16550_hw_force_interrupt_reemit(device_port);
 
-        return bytes_copied;
+        return bytes_copied;*/
+        
+        /* Just a test, DO NOT leave this unchanged */
+        int i = 0;
+        struct device_data *data =
+                (struct device_data *) file->private_data;
+
+        
+        /* wait until space is available in buffer */
+        if (wait_event_interruptible(data->wq_writes, 
+                                atomic_read(&data->write_fill) < BUFFER_SIZE))
+                return -ERESTARTSYS;
+
+
+
+        while ((atomic_read(&data->write_fill) < BUFFER_SIZE) && size) {
+                char c;
+                if (get_user(c, &user_buffer[i])) 
+                        return -EFAULT;
+
+                data->write_buffer[data->write_put] = c;
+                data->write_put=(data->write_put+1) % BUFFER_SIZE;
+                i++;
+                size--;
+                atomic_inc(&data->write_fill);
+        }
+        outb(inb(data->baseport + 1) & 0xfd, data->baseport + 1);
+        outb(inb(data->baseport + 1) | 0x02, data->baseport + 1);
+        return i;
 }
 
 irqreturn_t interrupt_handler(int irq_no, void *data)
