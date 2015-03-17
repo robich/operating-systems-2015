@@ -55,6 +55,47 @@ module_param(major, int, 0);
 static int behavior = 0x3;
 module_param(behavior, int, 0);
 
+irqreturn_t irq_handle(int irq_no, void *dev_id)
+{
+        int status;
+        unsigned char c;
+
+        struct device_data *data = (struct device_data *)dev_id;
+        status = inb(data->baseport + 2);
+
+        if ((status & 0x04) && (status & 0x02)) {
+                inb(data->baseport + 2);
+                return IRQ_HANDLED;
+        }
+
+        if (status & 0x04) {
+                /* read from port*/
+                while(atomic_read(&data->read_fill) < BUFFER_SIZE 
+                                        && inb(data->baseport + 5) & 0x01) {
+                        c = inb(data->baseport);
+                        data->read_buffer[data->read_put] = c;
+                        data->read_put=(data->read_put+1) % BUFFER_SIZE;
+                        atomic_inc(&data->read_fill);
+                }
+
+                if (atomic_read(&data->read_fill) > 0)
+                        wake_up(&data->wq_reads);
+
+        } else if (status & 0x02) {
+                /* write to port */
+                while(atomic_read(&data->write_fill)) {
+                        outb(data->write_buffer[data->write_get],
+                                                        data->baseport);
+                        atomic_dec(&data->write_fill);
+                        data->write_get = (data->write_get + 1) % BUFFER_SIZE;
+                }
+
+               if (atomic_read(&data->write_fill) < BUFFER_SIZE)
+                       wake_up(&data->wq_writes);
+        }
+        return IRQ_HANDLED;
+}
+
 static int uart16550_ioctl(struct inode *inode, struct file *file, unsigned int ioctl_num, unsigned long ioctl_param) {
 	/* TODO */
 	dprintk("[uart debug] uart16550_ioctl()\n");
