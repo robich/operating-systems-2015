@@ -70,11 +70,11 @@ irqreturn_t irq_handle(int irq_no, void *dev_id)
 
         if (status & 0x04) {
                 /* read from port*/
-                while(atomic_read(&data->read_fill) < BUFFER_SIZE 
+                while(atomic_read(&data->read_fill) < FIFO_SIZE 
                                         && inb(data->baseport + 5) & 0x01) {
                         c = inb(data->baseport);
                         data->read_buffer[data->read_put] = c;
-                        data->read_put=(data->read_put+1) % BUFFER_SIZE;
+                        data->read_put=(data->read_put+1) % FIFO_SIZE;
                         atomic_inc(&data->read_fill);
                 }
 
@@ -87,10 +87,10 @@ irqreturn_t irq_handle(int irq_no, void *dev_id)
                         outb(data->write_buffer[data->write_get],
                                                         data->baseport);
                         atomic_dec(&data->write_fill);
-                        data->write_get = (data->write_get + 1) % BUFFER_SIZE;
+                        data->write_get = (data->write_get + 1) % FIFO_SIZE;
                 }
 
-               if (atomic_read(&data->write_fill) < BUFFER_SIZE)
+               if (atomic_read(&data->write_fill) < FIFO_SIZE)
                        wake_up(&data->wq_writes);
         }
         return IRQ_HANDLED;
