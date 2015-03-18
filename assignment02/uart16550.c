@@ -55,47 +55,6 @@ module_param(major, int, 0);
 static int behavior = 0x3;
 module_param(behavior, int, 0);
 
-irqreturn_t irq_handle(int irq_no, void *dev_id)
-{
-        int status;
-        unsigned char c;
-
-        struct device_data *data = (struct device_data *)dev_id;
-        status = inb(data->baseport + 2);
-
-        if ((status & 0x04) && (status & 0x02)) {
-                inb(data->baseport + 2);
-                return IRQ_HANDLED;
-        }
-
-        if (status & 0x04) {
-                /* read from port*/
-                while(atomic_read(&data->read_fill) < FIFO_SIZE 
-                                        && inb(data->baseport + 5) & 0x01) {
-                        c = inb(data->baseport);
-                        data->read_buffer[data->read_put] = c;
-                        data->read_put=(data->read_put+1) % FIFO_SIZE;
-                        atomic_inc(&data->read_fill);
-                }
-
-                if (atomic_read(&data->read_fill) > 0)
-                        wake_up(&data->wq_reads);
-
-        } else if (status & 0x02) {
-                /* write to port */
-                while(atomic_read(&data->write_fill)) {
-                        outb(data->write_buffer[data->write_get],
-                                                        data->baseport);
-                        atomic_dec(&data->write_fill);
-                        data->write_get = (data->write_get + 1) % FIFO_SIZE;
-                }
-
-               if (atomic_read(&data->write_fill) < FIFO_SIZE)
-                       wake_up(&data->wq_writes);
-        }
-        return IRQ_HANDLED;
-}
-
 static int uart16550_ioctl(struct inode *inode, struct file *file, unsigned int ioctl_num, unsigned long ioctl_param) {
 	/* TODO */
 	dprintk("[uart debug] uart16550_ioctl()\n");
@@ -125,24 +84,7 @@ static int uart16550_read(struct file *file,
    	/* TODO */
    	dprintk("[uart debug] uart16550_read()\n");
    	
-   	/* DO NOT leave unchanged */
-   	int i = 0;
-        struct device_data *data =
-                (struct device_data *) file->private_data;
-
-        /* wait until data is available in buffer */
-        if (wait_event_interruptible(data->wq_reads, 
-                                        atomic_read(&data->read_fill) > 0))
-                return -ERESTARTSYS;
-
-        while ((atomic_read(&data->read_fill) > 0) && size) {
-                if (put_user(data->read_buffer[data->read_get], 
-                                                &user_buffer[i])) 
-                        return -EFAULT;
-                data->read_get++; data->read_get %= FIFO_SIZE;
-                i++; size--; atomic_dec(&data->read_fill);
-        }
-        return i;
+   	return 0;
    }
 
 /* To write data from userspace to the device */
@@ -165,32 +107,7 @@ static int uart16550_write(struct file *file, const char *user_buffer,
         return bytes_copied;*/
         
         /* Just a test, DO NOT leave this unchanged */
-        int i = 0;
-        struct device_data *data =
-                (struct device_data *) file->private_data;
-
-        
-        /* wait until space is available in buffer */
-        if (wait_event_interruptible(data->wq_writes, 
-                                atomic_read(&data->write_fill) < FIFO_SIZE))
-                return -ERESTARTSYS;
-
-
-
-        while ((atomic_read(&data->write_fill) < FIFO_SIZE) && size) {
-                char c;
-                if (get_user(c, &user_buffer[i])) 
-                        return -EFAULT;
-
-                data->write_buffer[data->write_put] = c;
-                data->write_put=(data->write_put+1) % FIFO_SIZE;
-                i++;
-                size--;
-                atomic_inc(&data->write_fill);
-        }
-        outb(inb(data->baseport + 1) & 0xfd, data->baseport + 1);
-        outb(inb(data->baseport + 1) | 0x02, data->baseport + 1);
-        return i;
+        return 0;
 }
 
 irqreturn_t interrupt_handler(int irq_no, void *data)
