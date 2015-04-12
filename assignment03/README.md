@@ -5,9 +5,9 @@ To load from git: assignment03/scripts/load_from_git.sh
 
 Files we are interested in:
 
-    inclde/linux/init_task.h
-    inclde/linux/sched.h
-    inclde/linux/sched/sysctl.h
+    include/linux/init_task.h
+    include/linux/sched.h
+    include/linux/sched/sysctl.h
     kernel/sched/Makefile
     kernel/sched/core.c
     kernel/sched/dummy.c
