@@ -96,6 +96,10 @@ static void yield_task_dummy(struct rq *rq)
 
 static void check_preempt_curr_dummy(struct rq *rq, struct task_struct *p, int flags)
 {
+	// Preempt current task if prio is higher (only need to reschedule in this case)
+	if (p->prio > rq->curr->prio) {
+		resched_curr(rq);
+	}
 }
 
 static struct task_struct *pick_next_task_dummy(struct rq *rq, struct task_struct* prev)
