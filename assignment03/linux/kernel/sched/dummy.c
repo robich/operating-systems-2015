@@ -160,7 +160,8 @@ static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
 	}
 	
 	if (curr->timeslice >= get_timeslice()) {
-		requeue_task_dummy(rq, curr, 0);
+		unsigned int flags = 0;
+		requeue_task_dummy(rq, curr, flags);
 	}
 }
 
@@ -173,13 +174,15 @@ static void switched_to_dummy(struct rq *rq, struct task_struct *p)
 	if (rq->curr == p) {
 		resched_curr(rq);
 	} else {
-		check_preempt_curr_dummy(rq, p, 0);
+		unsigned int flags = 0;
+		check_preempt_curr_dummy(rq, p, flags);
 	}
 }
 
 static void prio_changed_dummy(struct rq*rq, struct task_struct *p, int oldprio)
 {
-	check_preempt_curr_dummy(rq, p, 0); 
+	unsigned int flags = 0;
+	check_preempt_curr_dummy(rq, p, flags);
 }
 
 static unsigned int get_rr_interval_dummy(struct rq* rq, struct task_struct *p)
