@@ -174,6 +174,7 @@ static void switched_to_dummy(struct rq *rq, struct task_struct *p)
 
 static void prio_changed_dummy(struct rq*rq, struct task_struct *p, int oldprio)
 {
+	check_preempt_curr_dummy(rq, p, 0); 
 }
 
 static unsigned int get_rr_interval_dummy(struct rq* rq, struct task_struct *p)
