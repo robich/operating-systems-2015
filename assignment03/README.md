@@ -1,3 +1,5 @@
+Doc: http://www.makelinux.net/books/lkd2/ - Chapter 4
+
 Follow the indications given here: http://moodle.epfl.ch/pluginfile.php/1604903/mod_resource/content/3/assignment3_testing.pdf
 
 To save to git: assignment03/scripts/save_to_git.sh
