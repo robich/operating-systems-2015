@@ -90,6 +90,8 @@ static void requeue_task_dummy(struct rq *rq, struct task_struct *p, int flags)
 
 static void yield_task_dummy(struct rq *rq)
 {
+	unsigned in flags = 0;
+	requeue_task_dumy(rq, rq->curr, flags);
 }
 
 static void check_preempt_curr_dummy(struct rq *rq, struct task_struct *p, int flags)
