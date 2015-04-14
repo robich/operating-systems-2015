@@ -81,6 +81,14 @@ static void dequeue_task_dummy(struct rq *rq, struct task_struct *p, int flags)
 	sub_nr_running(rq,1);
 }
 
+static void requeue_task_dummy(struct rq *rq, struct task_struct *p, int flags)
+{
+	_dequeue_task_dummy(rq, p, flags);
+	_enqueue_task_dummy(rq, p, flags);
+	resched_curr(rq);
+
+}
+
 static void yield_task_dummy(struct rq *rq)
 {
 }
