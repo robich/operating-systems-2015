@@ -91,10 +91,16 @@ static void requeue_task_dummy(struct rq *rq, struct task_struct *p, int flags)
 
 static void yield_task_dummy(struct rq *rq)
 {
+	unsigned int flags = 0;
+	requeue_task_dummy(rq, rq->curr, flags);
 }
 
 static void check_preempt_curr_dummy(struct rq *rq, struct task_struct *p, int flags)
 {
+	// Need to preempt if p's prio is higher than the running process
+	if (p->prio > rq->curr->prio) {
+		resched_task(p);
+	}
 }
 
 static struct task_struct *pick_next_task_dummy(struct rq *rq, struct task_struct* prev)
