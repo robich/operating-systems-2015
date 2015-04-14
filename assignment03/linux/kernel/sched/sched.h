@@ -21,6 +21,8 @@ struct cpuidle_state;
 #define TASK_ON_RQ_MIGRATING	2
 
 #define NR_OF_PRIORITIES	5
+#define DUMMY_PRIO_MIN		131
+#define DUMMY_PRIO_MAX		135
 
 extern __read_mostly int scheduler_running;
 
