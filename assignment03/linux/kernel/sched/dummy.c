@@ -30,7 +30,12 @@ static inline unsigned int get_age_threshold(void)
 
 void init_dummy_rq(struct dummy_rq *dummy_rq, struct rq *rq)
 {
-	INIT_LIST_HEAD(&dummy_rq->queue);
+	int i;
+	for (i = 0; i < NR_OF_PRIORITIES; i++) {
+		INIT_LIST_HEAD(&dummy_rq->queues[i]);
+	}
+	
+	dummy_rq->dummy_age_tick_count = 0;
 }
 
 /*
