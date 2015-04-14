@@ -20,6 +20,8 @@ struct cpuidle_state;
 #define TASK_ON_RQ_QUEUED	1
 #define TASK_ON_RQ_MIGRATING	2
 
+#define NR_OF_PRIORITIES	5
+
 extern __read_mostly int scheduler_running;
 
 extern unsigned long calc_load_update;
@@ -470,6 +472,7 @@ struct dl_rq {
 
 struct dummy_rq {
 	struct list_head queues[NR_OF_PRIORITIES];
+	unsigned int dummy_age_tick_count;
 };
 
 #ifdef CONFIG_SMP
