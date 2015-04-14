@@ -47,8 +47,15 @@ static inline struct task_struct *dummy_task_of(struct sched_dummy_entity *dummy
 
 static inline void _enqueue_task_dummy(struct rq *rq, struct task_struct *p)
 {
+	struct dummy_rq *dummy_rq = &rq->dummy;
+	
+	// Set timeslice & age_tick_count to 0 in the scheduling entity
 	struct sched_dummy_entity *dummy_se = &p->dummy_se;
-	struct list_head *queue = &rq->dummy.queue;
+	dummy_se->timeslice = 0;
+	dummy_se->age_tick_count = 0;
+	
+	// Put task into the right queue according to the dynamic prio
+	struct list_head *queue = &dummy_rq->queues[p->prio - DUMMY_PRIO_MIN];
 	list_add_tail(&dummy_se->run_list, queue);
 }
 
