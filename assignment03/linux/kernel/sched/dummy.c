@@ -54,7 +54,7 @@ static inline void _enqueue_task_dummy(struct rq *rq, struct task_struct *p)
 	struct sched_dummy_entity *dummy_se = &p->dummy_se;
 	
 	// We map the right queue to the priority number
-	struct list_head *queue = &dummy_rq->queues[p->prio - DUMMY_PRIO_MIN];
+	struct list_head *queue = &dummy_rq->queues[p->prio - MIN_DUMMY_PRIO];
 
 	list_add_tail(&dummy_se->run_list, queue);
 }
