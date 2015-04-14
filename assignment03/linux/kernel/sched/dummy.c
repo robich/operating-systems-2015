@@ -151,16 +151,13 @@ static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
 		struct sched_dummy_entity *current_se;
 		
 		list_for_each_safe(p, n, &dummy_rq->queues[i]) {
-			if (!list_empty(&queue)) {
-				current_se = list_first_entry(&queue, struct sched_dummy_entity, run_list);
-				
-				current_se->age_tick_count++;
+			current_se = list_first_entry(&queue, struct sched_dummy_entity, run_list);
+			current_se->age_tick_count++;
 			
-				if (current_se->age_tick_count >= get_age_threshhold()) {
-					task_struct *current_task = dummy_task_of(current_se);
-					list_move_tail(current_task, &dummy_rq->queues[i-1]);
-					prio_changed_dummy(rq, current_task, i + MIN_DUMMY_PRIO);
-				}
+			if (current_se->age_tick_count >= get_age_threshhold()) {
+				task_struct *current_task = dummy_task_of(current_se);
+				list_move_tail(current_task, &dummy_rq->queues[i-1]);
+				prio_changed_dummy(rq, current_task, i + MIN_DUMMY_PRIO);
 			}
 		}
 	}
