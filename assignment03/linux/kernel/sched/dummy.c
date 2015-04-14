@@ -55,7 +55,7 @@ static inline void _enqueue_task_dummy(struct rq *rq, struct task_struct *p)
 	dummy_se->age_tick_count = 0;
 	
 	// Put task into the right queue according to the dynamic prio
-	struct list_head *queue = &dummy_rq->queues[p->prio - DUMMY_PRIO_MIN];
+	struct list_head *queue = &dummy_rq->queues[p->prio - MIN_DUMMY_PRIO];
 	list_add_tail(&dummy_se->run_list, queue);
 }
 
