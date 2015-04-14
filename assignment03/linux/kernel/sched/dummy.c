@@ -49,8 +49,13 @@ static inline struct task_struct *dummy_task_of(struct sched_dummy_entity *dummy
 
 static inline void _enqueue_task_dummy(struct rq *rq, struct task_struct *p)
 {
+	
+	struct dummy_rq *dummy_rq = &rq->dummy;
 	struct sched_dummy_entity *dummy_se = &p->dummy_se;
-	struct list_head *queue = &rq->dummy.queue;
+	
+	// We map the right queue to the priority number
+	struct list_head *queue = &dummy_rq->queues[p->prio - DUMMY_PRIO_MIN];
+
 	list_add_tail(&dummy_se->run_list, queue);
 }
 
