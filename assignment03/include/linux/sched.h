@@ -1260,6 +1260,7 @@ struct task_struct {
 	struct sched_entity se;
 	struct sched_rt_entity rt;
 	struct sched_dummy_entity dummy_se;
+	unsigned int dummy_age_count = 0;
 #ifdef CONFIG_CGROUP_SCHED
 	struct task_group *sched_task_group;
 #endif
