@@ -1171,6 +1171,7 @@ struct sched_dummy_entity {
 	struct list_head run_list;
 	
 	unsigned int time_slice;
+	unsigned int age_tick_count;
 };
 
 struct sched_dl_entity {
