@@ -102,6 +102,12 @@ static void check_preempt_curr_dummy(struct rq *rq, struct task_struct *p, int f
 	}
 }
 
+static void prio_changed_dummy(struct rq*rq, struct task_struct *p, int oldprio)
+{
+	unsigned int flags = 0;
+	check_preempt_curr_dummy(rq, p, flags);
+}
+
 static struct task_struct *pick_next_task_dummy(struct rq *rq, struct task_struct* prev)
 {
 	struct dummy_rq *dummy_rq = &rq->dummy;
@@ -177,12 +183,6 @@ static void switched_to_dummy(struct rq *rq, struct task_struct *p)
 		unsigned int flags = 0;
 		check_preempt_curr_dummy(rq, p, flags);
 	}
-}
-
-static void prio_changed_dummy(struct rq*rq, struct task_struct *p, int oldprio)
-{
-	unsigned int flags = 0;
-	check_preempt_curr_dummy(rq, p, flags);
 }
 
 static unsigned int get_rr_interval_dummy(struct rq* rq, struct task_struct *p)
