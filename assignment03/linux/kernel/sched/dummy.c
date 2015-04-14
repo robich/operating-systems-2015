@@ -110,16 +110,16 @@ static void prio_changed_dummy(struct rq*rq, struct task_struct *p, int oldprio)
 
 static struct task_struct *pick_next_task_dummy(struct rq *rq, struct task_struct* prev)
 {
-	struct dummy_rq *dummy_rq = &rq->dummy;
+	struct dummy_rq *dummy_rq = &(rq->dummy);
 	struct sched_dummy_entity *next;
 	
 	int i;
 	/* Iterate over the different priorities until we find a task */
 	for (i = 0; i < NR_OF_DUMMY_PRIORITIES; i++) {
-		struct list_head queue = dummy_rq->queues[i];
+		struct list_head *queue = &(dummy_rq->queues[i]);
 		
-		if (!list_empty(&queue)) {
-			next = list_first_entry(&queue, struct sched_dummy_entity, run_list);
+		if (!list_empty(queue)) {
+			next = list_first_entry(queue, struct sched_dummy_entity, run_list);
 			
 			return dummy_task_of(next);
 		}
@@ -145,23 +145,28 @@ static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
 	int i;
 	/* Increment age & test for threshhold */
 	for (i = 1; i < NR_OF_DUMMY_PRIORITIES; i++) {
-		struct list_head queue = dummy_rq->queues[i];
 		
 		struct list_head *p, *n;
 		struct sched_dummy_entity *current_se;
 		
 		list_for_each_safe(p, n, &dummy_rq->queues[i]) {
-			current_se = list_first_entry(&queue, struct sched_dummy_entity, run_list);
+			current_se = list_first_entry(p, struct sched_dummy_entity, run_list);
 			current_se->age_tick_count++;
 			
 			if (current_se->age_tick_count >= get_age_threshhold()) {
+				/* Get corresponding task_struct */
 				task_struct *current_task = dummy_task_of(current_se);
+				/* Set new priority and change queue */
+				unsigned int new_prio = i - 1 + MIN_DUMMY_PRIO;
+				current_task->prio = new_prio;
 				list_move_tail(current_task, &dummy_rq->queues[i-1]);
-				prio_changed_dummy(rq, current_task, i + MIN_DUMMY_PRIO);
+				/* Callback */
+				prio_changed_dummy(rq, current_task, new_prio + 1);
 			}
 		}
 	}
 	
+	curr->timeslice++;
 	if (curr->timeslice >= get_timeslice()) {
 		unsigned int flags = 0;
 		requeue_task_dummy(rq, curr, flags);
