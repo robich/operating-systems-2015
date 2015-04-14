@@ -170,6 +170,11 @@ static void switched_from_dummy(struct rq *rq, struct task_struct *p)
 
 static void switched_to_dummy(struct rq *rq, struct task_struct *p)
 {
+	if (rq->curr == p) {
+		resched_curr(rq);
+	} else {
+		check_preempt_curr_dummy(rq, p, 0);
+	}
 }
 
 static void prio_changed_dummy(struct rq*rq, struct task_struct *p, int oldprio)
