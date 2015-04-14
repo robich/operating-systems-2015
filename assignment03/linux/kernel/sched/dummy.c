@@ -49,12 +49,12 @@ static inline void _enqueue_task_dummy(struct rq *rq, struct task_struct *p)
 {
 	struct dummy_rq *dummy_rq = &rq->dummy;
 	
-	// Set timeslice & age_tick_count to 0 in the scheduling entity
+	/* Set timeslice & age_tick_count to 0 in the scheduling entity */
 	struct sched_dummy_entity *dummy_se = &p->dummy_se;
 	dummy_se->timeslice = 0;
 	dummy_se->age_tick_count = 0;
 	
-	// Put task into the right queue according to the dynamic prio
+	/* Put task into the right queue according to the dynamic prio */
 	struct list_head *queue = &dummy_rq->queues[p->prio - MIN_DUMMY_PRIO];
 	list_add_tail(&dummy_se->run_list, queue);
 }
@@ -96,7 +96,7 @@ static void yield_task_dummy(struct rq *rq)
 
 static void check_preempt_curr_dummy(struct rq *rq, struct task_struct *p, int flags)
 {
-	// Preempt current task if prio is higher (only need to reschedule in this case)
+	/* Preempt current task if prio is higher (only need to reschedule in this case) */
 	if (p->prio > rq->curr->prio) {
 		resched_curr(rq);
 	}
@@ -106,13 +106,22 @@ static struct task_struct *pick_next_task_dummy(struct rq *rq, struct task_struc
 {
 	struct dummy_rq *dummy_rq = &rq->dummy;
 	struct sched_dummy_entity *next;
-	if(!list_empty(&dummy_rq->queue)) {
-		next = list_first_entry(&dummy_rq->queue, struct sched_dummy_entity, run_list);
-                put_prev_task(rq, prev);
-		return dummy_task_of(next);
-	} else {
-		return NULL;
+	
+	int i;
+	/* Iterate over the different priorities until we find a task */
+	for (i = 0; i < NR_OF_DUMMY_PRIORITIES; i++) {
+		struct list_head queue = dummy_rq->queues[i];
+		
+		if (!list_empty(&queue)) {
+			next = list_first_entry(&queue, struct sched_dummy_entity, run_list);
+			
+			return dummy_task_of(next);
+		}
 	}
+
+	/* if nothing is found */
+	return NULL;
+	
 }
 
 static void put_prev_task_dummy(struct rq *rq, struct task_struct *prev)
