@@ -95,7 +95,7 @@ static void requeue_task_dummy(struct rq *rq, struct task_struct *p, int flags)
 static void yield_task_dummy(struct rq *rq)
 {
 	unsigned int flags = 0;
-	requeue_task_dumy(rq, rq->curr, flags);
+	requeue_task_dummy(rq, rq->curr, flags);
 }
 
 static void check_preempt_curr_dummy(struct rq *rq, struct task_struct *p, int flags)
@@ -157,7 +157,7 @@ static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
 			current_se = list_first_entry(p, struct sched_dummy_entity, run_list);
 			current_se->age_tick_count++;
 			
-			if (current_se->age_tick_count >= get_age_threshhold()) {
+			if (current_se->age_tick_count >= get_age_threshold()) {
 				/* Get corresponding task_struct */
 				struct task_struct *current_task = dummy_task_of(current_se);
 				/* Set new priority and change queue */
