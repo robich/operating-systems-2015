@@ -88,7 +88,7 @@ static void requeue_task_dummy(struct rq *rq, struct task_struct *p, int flags)
 	enqueue_task_dummy(rq, p, flags);*/
 	
 	_dequeue_task_dummy(p);
-	_enqueue_task_dummy(p);
+	_enqueue_task_dummy(rq, p);
 	resched_curr(rq);
 }
 
