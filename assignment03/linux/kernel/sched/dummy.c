@@ -78,7 +78,7 @@ static inline void _enqueue_task_dummy(struct rq *rq, struct task_struct *p)
 	struct list_head *queue = &dummy_rq->queues[p->prio - MIN_DUMMY_PRIO];
 	
 	#ifdef KERNEL_DEBUG
-	printk_deferred(KERN_ALERT "[info] put task in queue %p (nr=%d"), queue, p->prio - MIN_DUMMY_PRIO);
+	printk_deferred(KERN_ALERT "[info] put task in queue %p (nr=%d)", queue, p->prio - MIN_DUMMY_PRIO);
 	#endif
 	
 	list_add_tail(&dummy_se->run_list, queue);
