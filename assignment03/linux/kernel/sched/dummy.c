@@ -161,6 +161,7 @@ static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
 				struct task_struct *current_task = dummy_task_of(current_se);
 				/* Set new priority and change queue */
 				unsigned int new_prio = i - 1 + MIN_DUMMY_PRIO;
+				current_se->prio_saved = current_task->prio;
 				current_task->prio = new_prio;
 				list_move_tail(p, &dummy_rq->queues[i-1]);
 				/* Callback */
@@ -169,9 +170,13 @@ static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
 		}
 	}
 	
-	dummy_rq->timeslice++;
-	if (dummy_rq->timeslice >= get_timeslice()) {
+	curr->sched_dummy_entity.timeslice++;
+	if (curr->sched_dummy_entity.timeslice >= get_timeslice()) {
 		unsigned int flags = 0;
+		if (curr->prio != curr->dummy_se.prio_saved) {
+			// Need to put it back to its old priority
+			curr->prio = curr->dummy_se.prio_saved;
+		}
 		requeue_task_dummy(rq, curr, flags);
 	}
 }
