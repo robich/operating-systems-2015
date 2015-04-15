@@ -170,7 +170,7 @@ extern struct task_group root_task_group;
  *  INIT_TASK is used to set up the first task table, touch at
  * your own risk!. Base=0, limit=0x1fffff (=2MB)
  */
-#define INIT_TASK(tsk)	\
+#define INIT_TASK(tsk)							\
 {									\
 	.state		= 0,						\
 	.stack		= &init_thread_info,				\
@@ -193,6 +193,9 @@ extern struct task_group root_task_group;
 	},								\
 	.dummy_se	= {						\
 		.run_list	= LIST_HEAD_INIT(tsk.dummy_se.run_list),\
+		.timeslice = 0,						\
+		.age_tick_count = 0,					\
+		.prio_saved = 0,					\
 	},								\
 	.tasks		= LIST_HEAD_INIT(tsk.tasks),			\
 	INIT_PUSHABLE_TASKS(tsk)					\
