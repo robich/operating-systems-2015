@@ -170,8 +170,8 @@ static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
 		}
 	}
 	
-	curr->sched_dummy_entity.timeslice++;
-	if (curr->sched_dummy_entity.timeslice >= get_timeslice()) {
+	curr->dummy_se.timeslice++;
+	if (curr->dummy_se.timeslice >= get_timeslice()) {
 		unsigned int flags = 0;
 		if (curr->prio != curr->dummy_se.prio_saved) {
 			// Need to put it back to its old priority
