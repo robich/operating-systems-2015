@@ -12,7 +12,7 @@
 #define DUMMY_TIMESLICE		(100 * HZ / 1000)
 #define DUMMY_AGE_THRESHOLD	(3 * DUMMY_TIMESLICE)
 
-#define KERNEL_DEBUG
+//#define KERNEL_DEBUG
 
 unsigned int sysctl_sched_dummy_timeslice = DUMMY_TIMESLICE;
 static inline unsigned int get_timeslice(void)
