@@ -123,7 +123,7 @@ static struct task_struct *pick_next_task_dummy(struct rq *rq, struct task_struc
 		struct list_head *queue = &(dummy_rq->queues[i]);
 		
 		if (!list_empty(queue)) {
-			next = list_first_entry(queue, struct sched_dummy_entity, run_list);
+			next = list_entry(queue, struct sched_dummy_entity, run_list);
 			
 			return dummy_task_of(next);
 		}
