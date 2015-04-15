@@ -185,6 +185,8 @@ static struct task_struct *pick_next_task_dummy(struct rq *rq, struct task_struc
 			printk_deferred(KERN_ALERT "[info] list non_empty");
 			#endif
 			
+			put_prev_task(rq, prev);
+			
 			return dummy_task_of(next);
 		}
 	}
