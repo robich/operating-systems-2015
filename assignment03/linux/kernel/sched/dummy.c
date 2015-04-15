@@ -163,7 +163,7 @@ static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
 				/* Set new priority and change queue */
 				unsigned int new_prio = i - 1 + MIN_DUMMY_PRIO;
 				current_task->prio = new_prio;
-				list_move_tail(current_task, &dummy_rq->queues[i-1]);
+				list_move_tail(p, &dummy_rq->queues[i-1]);
 				/* Callback */
 				prio_changed_dummy(rq, current_task, new_prio + 1);
 			}
