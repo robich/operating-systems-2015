@@ -83,7 +83,7 @@ static void dequeue_task_dummy(struct rq *rq, struct task_struct *p, int flags)
 
 static void requeue_task_dummy(struct rq *rq, struct task_struct *p, int flags)
 {
-	/* Keep?
+	/* TODO à remettre ?
 	dequeue_task_dummy(rq, p, flags);
 	enqueue_task_dummy(rq, p, flags);*/
 	
@@ -102,6 +102,7 @@ static void check_preempt_curr_dummy(struct rq *rq, struct task_struct *p, int f
 {
 	/* Preempt current task if prio is higher (only need to reschedule in this case) */
 	if (p->prio > rq->curr->prio) {
+		// TODO resched_task(p)
 		resched_curr(rq);
 	}
 }
@@ -123,7 +124,7 @@ static struct task_struct *pick_next_task_dummy(struct rq *rq, struct task_struc
 		struct list_head *queue = &(dummy_rq->queues[i]);
 		
 		if (!list_empty(queue)) {
-			next = list_entry(queue, struct sched_dummy_entity, run_list);
+			next = list_first_entry(queue, struct sched_dummy_entity, run_list);
 			
 			return dummy_task_of(next);
 		}
@@ -154,7 +155,7 @@ static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
 		struct sched_dummy_entity *current_se;
 		
 		list_for_each_safe(p, n, &dummy_rq->queues[i]) {
-			current_se = list_first_entry(p, struct sched_dummy_entity, run_list);
+			current_se = list_entry(p, struct sched_dummy_entity, run_list);
 			current_se->age_tick_count++;
 			
 			if (current_se->age_tick_count >= get_age_threshold()) {
@@ -170,8 +171,8 @@ static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
 		}
 	}
 	
-	curr->dummy_se.timeslice++;
-	if (curr->dummy_se.timeslice >= get_timeslice()) {
+	dummy_rq->timeslice++;
+	if (dummy_rq->timeslice >= get_timeslice()) {
 		unsigned int flags = 0;
 		requeue_task_dummy(rq, curr, flags);
 	}
