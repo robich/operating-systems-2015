@@ -83,14 +83,18 @@ static void dequeue_task_dummy(struct rq *rq, struct task_struct *p, int flags)
 
 static void requeue_task_dummy(struct rq *rq, struct task_struct *p, int flags)
 {
-	_dequeue_task_dummy(rq, p, flags);
-	_enqueue_task_dummy(rq, p, flags);
+	/* Keep?
+	dequeue_task_dummy(rq, p, flags);
+	enqueue_task_dummy(rq, p, flags);*/
+	
+	_dequeue_task_dummy(p);
+	_enqueue_task_dummy(p);
 	resched_curr(rq);
 }
 
 static void yield_task_dummy(struct rq *rq)
 {
-	unsigned in flags = 0;
+	unsigned int flags = 0;
 	requeue_task_dumy(rq, rq->curr, flags);
 }
 
@@ -155,7 +159,7 @@ static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
 			
 			if (current_se->age_tick_count >= get_age_threshhold()) {
 				/* Get corresponding task_struct */
-				task_struct *current_task = dummy_task_of(current_se);
+				struct task_struct *current_task = dummy_task_of(current_se);
 				/* Set new priority and change queue */
 				unsigned int new_prio = i - 1 + MIN_DUMMY_PRIO;
 				current_task->prio = new_prio;
