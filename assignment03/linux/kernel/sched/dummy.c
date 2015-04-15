@@ -170,8 +170,8 @@ static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
 		}
 	}
 	
-	curr->timeslice++;
-	if (curr->timeslice >= get_timeslice()) {
+	curr->dummy_se->timeslice++;
+	if (curr->dummy_se->timeslice >= get_timeslice()) {
 		unsigned int flags = 0;
 		requeue_task_dummy(rq, curr, flags);
 	}
