@@ -83,12 +83,11 @@ static void dequeue_task_dummy(struct rq *rq, struct task_struct *p, int flags)
 
 static void requeue_task_dummy(struct rq *rq, struct task_struct *p, int flags)
 {
-	/* TODO à remettre ?
 	dequeue_task_dummy(rq, p, flags);
-	enqueue_task_dummy(rq, p, flags);*/
+	enqueue_task_dummy(rq, p, flags);
 	
-	_dequeue_task_dummy(p);
-	_enqueue_task_dummy(rq, p);
+	/*_dequeue_task_dummy(p);
+	_enqueue_task_dummy(rq, p);*/
 	resched_curr(rq);
 }
 
@@ -102,7 +101,6 @@ static void check_preempt_curr_dummy(struct rq *rq, struct task_struct *p, int f
 {
 	/* Preempt current task if prio is higher (only need to reschedule in this case) */
 	if (p->prio > rq->curr->prio) {
-		// TODO resched_task(p)
 		resched_curr(rq);
 	}
 }
