@@ -187,14 +187,13 @@ static void set_curr_task_dummy(struct rq *rq)
 
 static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
 {
-	// TODO change
+	
 	int i = 0;
 	struct sched_dummy_entity *next;
 	struct dummy_rq *dummy_rq = &rq->dummy;
 	struct list_head *p, *n;
 	struct task_struct *next_task;
 
-	/* Task preemption */
 	if (curr->dummy_se.timeslice >= get_timeslice()) {
 		requeue_task_dummy(rq, curr, 0);
 		resched_curr(rq);
@@ -202,7 +201,6 @@ static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
 		curr->dummy_se.timeslice += 1;
 	}
 
-	/* Aging with bad O(n) algorithm */
 	for (i = 0; i < NR_OF_DUMMY_PRIORITIES; ++i) {
 		list_for_each_safe(p, n, &dummy_rq->queues[i]) {
 			next = list_entry(p, struct sched_dummy_entity, run_list);
