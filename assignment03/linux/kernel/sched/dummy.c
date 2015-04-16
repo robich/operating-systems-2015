@@ -56,11 +56,14 @@ static inline void _enqueue_task_dummy(struct rq *rq, struct task_struct *p)
 	/* Set timeslice & age_tick_count to 0 in the scheduling entity */
 	struct sched_dummy_entity *dummy_se = &p->dummy_se;
 	dummy_se->age_tick_count = 0;
-	
+	int priority = -1;
+	if(prio >= MIN_DUMMY_PRIO && prio < MIN_DUMMY_PRIO + NR_OF_DUMMY_PRIORITIES){
+		priority = p->prio - MIN_DUMMY_PRIO;
+	}
 	if (priority < 0) return;
 	
 	/* Put task into the right queue according to the dynamic prio */
-	struct list_head *queue = &dummy_rq->queues[p->prio - MIN_DUMMY_PRIO];
+	struct list_head *queue = &dummy_rq->queues[priority];
 	
 	list_add_tail(&dummy_se->run_list, queue);
 	
@@ -112,7 +115,7 @@ static void check_preempt_curr_dummy(struct rq *rq, struct task_struct *p, int f
 	#endif
 	
 	/* Preempt current task if prio is lower (only need to reschedule in this case) */
-	if (p->prio < rq->curr->prio) {
+	if (rq->curr == NULL || p->prio < rq->curr->prio) {
 		#ifdef KERNEL_DEBUG
 		printk_deferred(KERN_ALERT "[info] preempting, call resched_curr\n", rq, p);
 		#endif
@@ -126,16 +129,16 @@ static void prio_changed_dummy(struct rq*rq, struct task_struct *p, int oldprio)
 	printk_deferred(KERN_ALERT "[call] prio_changed_dummy(rq=%p, p=%p, oldprio=%d)\n", rq, p, oldprio);
 	printk_deferred(KERN_ALERT "[info] call check_preempt_curr_dummy", p->prio);
 	#endif
-	
-	unsigned int flags = 0;
-	requeue_task_dummy(rq, p, flags);
+	if (p->prio != oldprio)
+		unsigned int flags = 0;
+		requeue_task_dummy(rq, p, flags);
 }
 
 static struct task_struct *pick_next_task_dummy(struct rq *rq, struct task_struct* prev)
 {
 	
 	struct dummy_rq *dummy_rq = &(rq->dummy);
-	struct sched_dummy_entity *next;
+	struct sched_dummy_entity *next = NULL;
 	
 	int i = 0;
 	/* Iterate over the different priorities until we find a task */
