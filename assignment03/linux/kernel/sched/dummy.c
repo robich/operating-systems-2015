@@ -189,9 +189,10 @@ static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
 {
 	// TODO change
 	int i = 0;
-	struct sched_dummy_entity *dummy_se = NULL, *deletion_tmp = NULL;
+	struct sched_dummy_entity *next;
 	struct dummy_rq *dummy_rq = &rq->dummy;
-	struct task_struct *task = NULL;
+	struct list_head *p, *n;
+	struct task_struct *next_task;
 
 	/* Task preemption */
 	if (curr->dummy_se.timeslice >= get_timeslice()) {
@@ -203,17 +204,18 @@ static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
 
 	/* Aging with bad O(n) algorithm */
 	for (i = 0; i < NR_OF_DUMMY_PRIORITIES; ++i) {
-		list_for_each_entry_safe(dummy_se, deletion_tmp, &dummy_rq->queues[i], run_list) {
-			task = dummy_task_of(dummy_se);
+		list_for_each_safe(p, n, &dummy_rq->queues[i]) {
+			next = list_entry(p, struct sched_dummy_entity, run_list);
+			next_task = dummy_task_of(next);
 
-			if (dummy_se != &curr->dummy_se)
-				dummy_se->age_tick_count += 1;
+			if (next != &curr->dummy_se)
+				next->age_tick_count += 1;
 
-			if (dummy_se->age_tick_count >= get_age_threshold()
-					&& task->prio > MIN_DUMMY_PRIO) {
-				task->prio -= 1;
+			if (next->age_tick_count >= get_age_threshold()
+					&& next_task->prio > MIN_DUMMY_PRIO) {
+				next_task->prio -= 1;
 				unsigned int flags = 0;
-				requeue_task_dummy(rq, task, flags);
+				requeue_task_dummy(rq, next_task, flags);
 			}
 		}
 	}
