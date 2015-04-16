@@ -68,9 +68,8 @@ static inline void _enqueue_task_dummy(struct rq *rq, struct task_struct *p)
 	
 	dummy_se->age_tick_count = 0;
 	
-	// TODO change
-	if (rq->curr == NULL || p->prio < rq->curr->prio)
-		resched_curr(rq);
+	int flags = 0;
+	check_preempt_curr_dummy(rq, p, flags);
 }
 
 static inline void _dequeue_task_dummy(struct task_struct *p)
