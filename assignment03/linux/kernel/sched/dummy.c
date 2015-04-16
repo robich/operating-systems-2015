@@ -191,12 +191,15 @@ static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
 			
 			if (current_se->age_tick_count >= get_age_threshold()) {
 				
-				current_task->prio--;
+				/* Set new priority and change queue */
+				unsigned int new_prio = i - 1 + MIN_DUMMY_PRIO;
+				current_se->prio_saved = current_task->prio;
+				current_task->prio = new_prio;
 				
 				current_se->age_tick_count = 0;
 				
 				/* Callback */
-				prio_changed_dummy(rq, current_task, current_task->prio);
+				prio_changed_dummy(rq, current_task, new_prio);
 			}
 		}
 	}
@@ -219,7 +222,6 @@ static void switched_from_dummy(struct rq *rq, struct task_struct *p)
 
 static void switched_to_dummy(struct rq *rq, struct task_struct *p)
 {
-	if (!p->on_rq) return;
 	
 	if (rq->curr == p) {
 		resched_curr(rq);
