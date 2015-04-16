@@ -91,8 +91,8 @@ static void dequeue_task_dummy(struct rq *rq, struct task_struct *p, int flags)
 
 static void requeue_task_dummy(struct rq *rq, struct task_struct *p, int flags)
 {
-	dequeue_task_dummy(rq, p, flags);
-	enqueue_task_dummy(rq, p, flags);
+	_dequeue_task_dummy(p);
+	_enqueue_task_dummy(rq, p);
 }
 
 static void yield_task_dummy(struct rq *rq)
@@ -166,17 +166,16 @@ static void set_curr_task_dummy(struct rq *rq)
 static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
 {
 	struct dummy_rq *dummy_rq = &rq->dummy;
+	struct list_head *p, *n;
+	struct sched_dummy_entity *current_se;
 	
 	int i;
 	/* Increment age & test for threshhold */
-	for (i = 1; i < NR_OF_DUMMY_PRIORITIES; i++) {
+	for (i = 1; i<NR_OF_DUMMY_PRIORITIES; i++) {
 		
 		#ifdef KERNEL_DEBUG
 		printk_deferred(KERN_ALERT "[info] iterating on priority %d\n", i);
 		#endif
-		
-		struct list_head *p, *n;
-		struct sched_dummy_entity *current_se;
 		
 		list_for_each_safe(p, n, &dummy_rq->queues[i]) {
 			current_se = list_entry(p, struct sched_dummy_entity, run_list);
@@ -192,10 +191,7 @@ static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
 			
 			if (current_se->age_tick_count >= get_age_threshold()) {
 				
-				/* Set new priority and change queue */
-				unsigned int new_prio = i - 1 + MIN_DUMMY_PRIO;
-				current_se->prio_saved = current_task->prio;
-				current_task->prio = new_prio;
+				current_task->prio--;
 				
 				current_se->age_tick_count = 0;
 				
@@ -223,6 +219,8 @@ static void switched_from_dummy(struct rq *rq, struct task_struct *p)
 
 static void switched_to_dummy(struct rq *rq, struct task_struct *p)
 {
+	if (!p->on_rq) return;
+	
 	if (rq->curr == p) {
 		resched_curr(rq);
 	} else {
