@@ -57,7 +57,7 @@ static inline void _enqueue_task_dummy(struct rq *rq, struct task_struct *p)
 	struct sched_dummy_entity *dummy_se = &p->dummy_se;
 	dummy_se->age_tick_count = 0;
 	int prio = -1;
-	if(prio >= MIN_DUMMY_PRIO && prio < MIN_DUMMY_PRIO + NR_OF_DUMMY_PRIORITIES){
+	if(p->prio >= MIN_DUMMY_PRIO && p->prio < MIN_DUMMY_PRIO + NR_OF_DUMMY_PRIORITIES){
 		prio = p->prio - MIN_DUMMY_PRIO;
 	}
 	if (prio < 0) return;
