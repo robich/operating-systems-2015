@@ -142,7 +142,9 @@ static struct task_struct *pick_next_task_dummy(struct rq *rq, struct task_struc
 {
 	
 	struct dummy_rq *dummy_rq = &(rq->dummy);
-	struct sched_dummy_entity *next = NULL;
+	struct sched_dummy_entity *next;
+	struct task_struct *next_task;
+
 	
 	int i = 0;
 	/* Iterate over the different priorities until we find a task */
