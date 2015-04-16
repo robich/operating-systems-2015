@@ -167,9 +167,9 @@ static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
 {
 	struct dummy_rq *dummy_rq = &rq->dummy;
 	struct task_struct *current_task = NULL;
-	int i = 0;
+	int i = 1;
 	/* Increment age & test for threshhold */
-	for (i = 0; i < NR_OF_DUMMY_PRIORITIES; i++) {
+	for (i = 1; i < NR_OF_DUMMY_PRIORITIES; i++) {
 		
 		#ifdef KERNEL_DEBUG
 		printk_deferred(KERN_ALERT "[info] iterating on priority %d\n", i);
