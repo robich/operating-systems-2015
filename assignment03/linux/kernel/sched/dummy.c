@@ -51,19 +51,18 @@ static inline struct task_struct *dummy_task_of(struct sched_dummy_entity *dummy
 
 static inline void _enqueue_task_dummy(struct rq *rq, struct task_struct *p)
 {
-	struct dummy_rq *dummy_rq = &rq->dummy;
 	
-	/* Set timeslice & age_tick_count to 0 in the scheduling entity */
-	struct sched_dummy_entity *dummy_se = &p->dummy_se;
-
-	int prio = -1;
-	if(p->prio >= MIN_DUMMY_PRIO && p->prio < MIN_DUMMY_PRIO + NR_OF_DUMMY_PRIORITIES){
-		prio = p->prio - MIN_DUMMY_PRIO;
+	if (!dummy_prio(p->prio)) {
+		// defined in include/linux/sched.h
+		// Dealing with prio outside of dumy.c's range. Do nothing.
+		return;
 	}
-	if (prio < 0) return;
+	
+	struct dummy_rq *dummy_rq = &rq->dummy;
+	struct sched_dummy_entity *dummy_se = &p->dummy_se;
 	
 	/* Put task into the right queue according to the dynamic prio */
-	struct list_head *queue = &dummy_rq->queues[prio];
+	struct list_head *queue = &dummy_rq->queues[p->prio - MIN_DUMMY_PRIO];
 	
 	list_add_tail(&dummy_se->run_list, queue);
 	
