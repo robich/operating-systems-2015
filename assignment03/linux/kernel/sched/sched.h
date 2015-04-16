@@ -472,6 +472,7 @@ struct dl_rq {
 
 struct dummy_rq {
 	struct list_head queues[NR_OF_DUMMY_PRIORITIES];
+	struct task_struct *curr;
 };
 
 #ifdef CONFIG_SMP
