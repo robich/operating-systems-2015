@@ -55,7 +55,7 @@ static inline void _enqueue_task_dummy(struct rq *rq, struct task_struct *p)
 	
 	/* Set timeslice & age_tick_count to 0 in the scheduling entity */
 	struct sched_dummy_entity *dummy_se = &p->dummy_se;
-	dummy_se->age_tick_count = 0;
+
 	int prio = -1;
 	if(p->prio >= MIN_DUMMY_PRIO && p->prio < MIN_DUMMY_PRIO + NR_OF_DUMMY_PRIORITIES){
 		prio = p->prio - MIN_DUMMY_PRIO;
@@ -66,6 +66,8 @@ static inline void _enqueue_task_dummy(struct rq *rq, struct task_struct *p)
 	struct list_head *queue = &dummy_rq->queues[prio];
 	
 	list_add_tail(&dummy_se->run_list, queue);
+	
+	dummy_se->age_tick_count = 0;
 	
 	unsigned int flags = 0;
 	check_preempt_curr_dummy(rq, p, flags);
