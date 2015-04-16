@@ -129,9 +129,10 @@ static void prio_changed_dummy(struct rq*rq, struct task_struct *p, int oldprio)
 	printk_deferred(KERN_ALERT "[call] prio_changed_dummy(rq=%p, p=%p, oldprio=%d)\n", rq, p, oldprio);
 	printk_deferred(KERN_ALERT "[info] call check_preempt_curr_dummy", p->prio);
 	#endif
-	if (p->prio != oldprio)
+	if (p->prio != oldprio){
 		unsigned int flags = 0;
 		requeue_task_dummy(rq, p, flags);
+	}
 }
 
 static struct task_struct *pick_next_task_dummy(struct rq *rq, struct task_struct* prev)
