@@ -88,14 +88,13 @@ static void requeue_task_dummy(struct rq *rq, struct task_struct *p, int flags)
 {
 	dequeue_task_dummy(rq, p, flags);
 	enqueue_task_dummy(rq, p, flags);
-	
-	resched_curr(rq);
 }
 
 static void yield_task_dummy(struct rq *rq)
 {
 	unsigned int flags = 0;
 	requeue_task_dummy(rq, rq->curr, flags);
+	resched_curr(rq);
 }
 
 static void check_preempt_curr_dummy(struct rq *rq, struct task_struct *p, int flags)
@@ -192,7 +191,10 @@ static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
 				unsigned int new_prio = i - 1 + MIN_DUMMY_PRIO;
 				current_se->prio_saved = current_task->prio;
 				current_task->prio = new_prio;
-				list_move_tail(p, &dummy_rq->queues[i-1]);
+				
+				unsigned int flags = 0;
+				requeue_task_dummy(rq, current_task, flags);
+				
 				/* Callback */
 				prio_changed_dummy(rq, current_task, new_prio + 1);
 			}
@@ -207,6 +209,7 @@ static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
 			curr->prio = curr->dummy_se.prio_saved;
 		}
 		requeue_task_dummy(rq, curr, flags);
+		resched_curr(rq);
 	}
 }
 
