@@ -244,8 +244,6 @@ static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
 				current_task->prio = new_prio;
 				list_move_tail(p, &dummy_rq->queues[i-1]);
 				/* Callback */
-				// Try to fix test4
-				resched_curr(rq);
 				prio_changed_dummy(rq, current_task, new_prio + 1);
 			}
 		}
