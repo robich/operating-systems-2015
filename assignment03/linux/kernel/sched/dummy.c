@@ -12,7 +12,7 @@
 #define DUMMY_TIMESLICE		(100 * HZ / 1000)
 #define DUMMY_AGE_THRESHOLD	(3 * DUMMY_TIMESLICE)
 
-#define KERNEL_DEBUG
+#define KERNEL_DEBUG	0
 
 static void check_preempt_curr_dummy(struct rq *rq, struct task_struct *p, int flags);
 
