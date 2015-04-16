@@ -38,6 +38,8 @@ void init_dummy_rq(struct dummy_rq *dummy_rq, struct rq *rq)
 	for (i = 0; i < NR_OF_DUMMY_PRIORITIES; i++) {
 		INIT_LIST_HEAD(&dummy_rq->queues[i]);
 	}
+	
+	// Some initialization also happen in include/linux/init_task.h
 }
 
 /*
@@ -131,9 +133,10 @@ static void prio_changed_dummy(struct rq*rq, struct task_struct *p, int oldprio)
 	printk_deferred(KERN_ALERT "[info] call check_preempt_curr_dummy", p->prio);
 	#endif
 	
-	// TODO change
-	if (p->prio != oldprio)
-		requeue_task_dummy(rq, p, 0);
+	if (p->prio != oldprio) {
+		unsigned int flags = 0;
+		requeue_task_dummy(rq, p, flags);	
+	}
 }
 
 static struct task_struct *pick_next_task_dummy(struct rq *rq, struct task_struct* prev)
@@ -154,19 +157,19 @@ static struct task_struct *pick_next_task_dummy(struct rq *rq, struct task_struc
 			next_task = dummy_task_of(next);
 			put_prev_task(rq, prev);
 			
-			if (next_task != dummy_rq->curr) {
-				/* Task will be executed, reset it's priority */
+			if (next_task != dummy_rq->current_task) {
+				
 				next_task->prio = next_task->normal_prio;
-
-				/* Reset time slice and age counters*/
 				next_task->dummy_se.timeslice = 0;
 				next_task->dummy_se.age_tick_count = 0;
 
-				dummy_rq->curr = next_task;
+				dummy_rq->current_task = next_task;
 			}
+			
 			return next_task;
 		}
 	}
+	
 	/* if nothing is found */
 	return NULL;
 	
@@ -174,6 +177,7 @@ static struct task_struct *pick_next_task_dummy(struct rq *rq, struct task_struc
 
 static void put_prev_task_dummy(struct rq *rq, struct task_struct *prev)
 {
+	// Nothing
 }
 
 static void set_curr_task_dummy(struct rq *rq)
@@ -208,7 +212,8 @@ static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
 			if (dummy_se->age_tick_count >= get_age_threshold()
 					&& task->prio > MIN_DUMMY_PRIO) {
 				task->prio -= 1;
-				requeue_task_dummy(rq, task, 0);
+				unsigned int flags = 0;
+				requeue_task_dummy(rq, task, flags);
 			}
 		}
 	}
@@ -216,6 +221,7 @@ static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
 
 static void switched_from_dummy(struct rq *rq, struct task_struct *p)
 {
+	// Nothing
 }
 
 static void switched_to_dummy(struct rq *rq, struct task_struct *p)
@@ -250,6 +256,7 @@ static inline int select_task_rq_dummy(struct task_struct *p, int cpu, int sd_fl
 
 static void set_cpus_allowed_dummy(struct task_struct *p,  const struct cpumask *new_mask)
 {
+	// Nothing
 }
 #endif
 /*
@@ -257,6 +264,7 @@ static void set_cpus_allowed_dummy(struct task_struct *p,  const struct cpumask 
  */
 static void update_curr_dummy(struct rq*rq)
 {
+	// Nothing
 }
 const struct sched_class dummy_sched_class = {
 	.next			= &idle_sched_class,
