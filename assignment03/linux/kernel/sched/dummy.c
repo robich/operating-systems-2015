@@ -151,13 +151,22 @@ static struct task_struct *pick_next_task_dummy(struct rq *rq, struct task_struc
 		
 		if (!list_empty(queue)) {
 			next = list_first_entry(queue, struct sched_dummy_entity, run_list);
-			
+			next_task = dummy_task_of(next);
 			put_prev_task(rq, prev);
 			
-			return dummy_task_of(next);
+			if (next_task != dummy_rq->curr) {
+				/* Task will be executed, reset it's priority */
+				next_task->prio = next_task->normal_prio;
+
+				/* Reset time slice and age counters*/
+				next_task->dummy_se.timeslice = 0;
+				next_task->dummy_se.age_tick_count = 0;
+
+				dummy_rq->curr = next_task;
+			}
+			return next_task;
 		}
 	}
-
 	/* if nothing is found */
 	return NULL;
 	
