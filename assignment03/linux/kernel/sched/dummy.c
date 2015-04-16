@@ -34,7 +34,7 @@ static inline unsigned int get_age_threshold(void)
 
 void init_dummy_rq(struct dummy_rq *dummy_rq, struct rq *rq)
 {
-	int i;
+	int i = 0;
 	for (i = 0; i < NR_OF_DUMMY_PRIORITIES; i++) {
 		INIT_LIST_HEAD(&dummy_rq->queues[i]);
 	}
@@ -136,7 +136,7 @@ static struct task_struct *pick_next_task_dummy(struct rq *rq, struct task_struc
 	struct dummy_rq *dummy_rq = &(rq->dummy);
 	struct sched_dummy_entity *next;
 	
-	int i;
+	int i = 0;
 	/* Iterate over the different priorities until we find a task */
 	for (i = 0; i < NR_OF_DUMMY_PRIORITIES; i++) {
 		struct list_head *queue = &(dummy_rq->queues[i]);
@@ -167,7 +167,7 @@ static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
 {
 	struct dummy_rq *dummy_rq = &rq->dummy;
 	struct task_struct *current_task = NULL;
-	int i;
+	int i = 0;
 	/* Increment age & test for threshhold */
 	for (i = 0; i < NR_OF_DUMMY_PRIORITIES; i++) {
 		
