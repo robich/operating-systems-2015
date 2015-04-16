@@ -69,8 +69,9 @@ static inline void _enqueue_task_dummy(struct rq *rq, struct task_struct *p)
 	
 	dummy_se->age_tick_count = 0;
 	
-	unsigned int flags = 0;
-	check_preempt_curr_dummy(rq, p, flags);
+	// TODO change
+	if (rq->curr == NULL || p->prio < rq->curr->prio)
+		resched_curr(rq);
 }
 
 static inline void _dequeue_task_dummy(struct task_struct *p)
@@ -131,10 +132,10 @@ static void prio_changed_dummy(struct rq*rq, struct task_struct *p, int oldprio)
 	printk_deferred(KERN_ALERT "[call] prio_changed_dummy(rq=%p, p=%p, oldprio=%d)\n", rq, p, oldprio);
 	printk_deferred(KERN_ALERT "[info] call check_preempt_curr_dummy", p->prio);
 	#endif
-	if (p->prio != oldprio){
-		unsigned int flags = 0;
-		requeue_task_dummy(rq, p, flags);
-	}
+	
+	// TODO change
+	if (p->prio != oldprio)
+		requeue(rq, p, 0);
 }
 
 static struct task_struct *pick_next_task_dummy(struct rq *rq, struct task_struct* prev)
@@ -173,55 +174,34 @@ static void set_curr_task_dummy(struct rq *rq)
 
 static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
 {
+	// TODO change
+	int i = 0;
+	struct sched_dummy_entity *dummy_se = NULL, *deletion_tmp = NULL;
 	struct dummy_rq *dummy_rq = &rq->dummy;
-	struct task_struct *current_task = NULL;
-	int i = 1;
-	/* Increment age & test for threshhold */
-	for (i = 1; i < NR_OF_DUMMY_PRIORITIES; i++) {
-		
-		#ifdef KERNEL_DEBUG
-		printk_deferred(KERN_ALERT "[info] iterating on priority %d\n", i);
-		#endif
-		
-		struct list_head *p, *n;
-		struct sched_dummy_entity *current_se;
-		
-		list_for_each_safe(p, n, &dummy_rq->queues[i]) {
-			current_se = list_entry(p, struct sched_dummy_entity, run_list);
-			current_se->age_tick_count++;
-			
-			/* Get corresponding task_struct */
-			current_task = dummy_task_of(current_se);
-				
-			#ifdef KERNEL_DEBUG
-			printk_deferred(KERN_ALERT "[info] iterating on task_struct %u\n", current_task->pid);
-			printk_deferred(KERN_ALERT "[info] increment age, now at %u\n", current_se->age_tick_count);
-			#endif
-			
-			if (current_se->age_tick_count >= get_age_threshold()) {
-				
-				/* Set new priority and change queue */
-				unsigned int new_prio = i - 1 + MIN_DUMMY_PRIO;
-				current_se->prio_saved = current_task->prio;
-				current_task->prio = new_prio;
-				
-				current_se->age_tick_count = 0;
-				
-				/* Callback */
-				prio_changed_dummy(rq, current_task, new_prio + 1);
+	struct task_struct *task = NULL;
+
+	/* Task preemption */
+	if (curr->dummy_se.timeslice >= get_timeslice()) {
+		requeue(rq, curr, 0);
+		resched_curr(rq);
+	} else {
+		curr->dummy_se.timeslice += 1;
+	}
+
+	/* Aging with bad O(n) algorithm */
+	for (i = 0; i < NR_OF_DUMMY_PRIORITIES; ++i) {
+		list_for_each_entry_safe(dummy_se, deletion_tmp, &dummy_rq->queues[i], run_list) {
+			task = dummy_task_of(dummy_se);
+
+			if (dummy_se != &curr->dummy_se)
+				dummy_se->age_tick_count += 1;
+
+			if (dummy_se->age_tick_count >= get_age_threshold()
+					&& task->prio > MIN_DUMMY_PRIO) {
+				task->prio -= 1;
+				requeue(rq, task, 0);
 			}
 		}
-	}
-	
-	curr->dummy_se.timeslice++;
-	if (curr->dummy_se.timeslice >= get_timeslice()) {
-		unsigned int flags = 0;
-		if (curr->prio != curr->dummy_se.prio_saved) {
-			// Need to put it back to its old priority
-			curr->prio = curr->dummy_se.prio_saved;
-		}
-		requeue_task_dummy(rq, curr, flags);
-		resched_curr(rq);
 	}
 }
 
