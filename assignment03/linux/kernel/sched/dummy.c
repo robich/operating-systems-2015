@@ -166,6 +166,7 @@ static void put_prev_task_dummy(struct rq *rq, struct task_struct *prev)
 
 static void set_curr_task_dummy(struct rq *rq)
 {
+	_dequeue_task_dummy(rq->curr);
 }
 
 static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
@@ -228,6 +229,9 @@ static void switched_from_dummy(struct rq *rq, struct task_struct *p)
 
 static void switched_to_dummy(struct rq *rq, struct task_struct *p)
 {
+	if(!task_on_rq_queued(p))
+		return;
+	
 	if (rq->curr == p) {
 		resched_curr(rq);
 	} else {
