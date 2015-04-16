@@ -55,8 +55,9 @@ static inline void _enqueue_task_dummy(struct rq *rq, struct task_struct *p)
 	
 	/* Set timeslice & age_tick_count to 0 in the scheduling entity */
 	struct sched_dummy_entity *dummy_se = &p->dummy_se;
-	dummy_se->timeslice = 0;
 	dummy_se->age_tick_count = 0;
+	
+	if (priority < 0) return;
 	
 	/* Put task into the right queue according to the dynamic prio */
 	struct list_head *queue = &dummy_rq->queues[p->prio - MIN_DUMMY_PRIO];
@@ -91,8 +92,8 @@ static void dequeue_task_dummy(struct rq *rq, struct task_struct *p, int flags)
 
 static void requeue_task_dummy(struct rq *rq, struct task_struct *p, int flags)
 {
-	dequeue_task_dummy(rq, p, flags);
-	enqueue_task_dummy(rq, p, flags);
+	_dequeue_task_dummy(p);
+	_enqueue_task_dummy(rq, p);
 }
 
 static void yield_task_dummy(struct rq *rq)
