@@ -135,7 +135,7 @@ static void prio_changed_dummy(struct rq*rq, struct task_struct *p, int oldprio)
 	
 	// TODO change
 	if (p->prio != oldprio)
-		requeue(rq, p, 0);
+		requeue_task_dummy(rq, p, 0);
 }
 
 static struct task_struct *pick_next_task_dummy(struct rq *rq, struct task_struct* prev)
@@ -182,7 +182,7 @@ static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
 
 	/* Task preemption */
 	if (curr->dummy_se.timeslice >= get_timeslice()) {
-		requeue(rq, curr, 0);
+		requeue_task_dummy(rq, curr, 0);
 		resched_curr(rq);
 	} else {
 		curr->dummy_se.timeslice += 1;
@@ -199,7 +199,7 @@ static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
 			if (dummy_se->age_tick_count >= get_age_threshold()
 					&& task->prio > MIN_DUMMY_PRIO) {
 				task->prio -= 1;
-				requeue(rq, task, 0);
+				requeue_task_dummy(rq, task, 0);
 			}
 		}
 	}
