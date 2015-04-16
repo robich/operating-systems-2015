@@ -34,7 +34,7 @@ static inline unsigned int get_age_threshold(void)
 
 void init_dummy_rq(struct dummy_rq *dummy_rq, struct rq *rq)
 {
-	int i = 0;
+	int i;
 	for (i = 0; i < NR_OF_DUMMY_PRIORITIES; i++) {
 		INIT_LIST_HEAD(&dummy_rq->queues[i]);
 	}
@@ -89,7 +89,7 @@ static void dequeue_task_dummy(struct rq *rq, struct task_struct *p, int flags)
 	sub_nr_running(rq,1);
 }
 
-static void requeue_task_dummy(struct rq *rq, struct task_struct *p, int flags)
+static void requeue_task_dummy(struct rq *rq, struct task_struct *p)
 {
 	_dequeue_task_dummy(p);
 	_enqueue_task_dummy(rq, p);
@@ -171,7 +171,7 @@ static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
 	
 	int i;
 	/* Increment age & test for threshhold */
-	for (i = 1; i<NR_OF_DUMMY_PRIORITIES; i++) {
+	for (i = 0; i<NR_OF_DUMMY_PRIORITIES; i++) {
 		
 		#ifdef KERNEL_DEBUG
 		printk_deferred(KERN_ALERT "[info] iterating on priority %d\n", i);
@@ -199,7 +199,7 @@ static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
 				current_se->age_tick_count = 0;
 				
 				/* Callback */
-				prio_changed_dummy(rq, current_task, new_prio);
+				prio_changed_dummy(rq, current_task, new_prio + 1);
 			}
 		}
 	}
