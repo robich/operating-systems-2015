@@ -196,7 +196,7 @@ static void task_tick_dummy(struct rq *rq, struct task_struct *curr, int queued)
 				current_se->age_tick_count = 0;
 				
 				/* Callback */
-				prio_changed_dummy(rq, current_task, new_prio + 1);
+				prio_changed_dummy(rq, current_task, current_task->prio);
 			}
 		}
 	}
