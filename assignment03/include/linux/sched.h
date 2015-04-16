@@ -1172,7 +1172,6 @@ struct sched_dummy_entity {
 	
 	unsigned int timeslice;
 	unsigned int age_tick_count;
-	int prio_saved;
 };
 
 struct sched_dl_entity {
