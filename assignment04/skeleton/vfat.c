@@ -20,7 +20,8 @@
 #include "util.h"
 #include "debugfs.h"
 
-#define DEBUG_PRINT(...) printf(__VA_ARGS)
+//#define DEBUG_PRINT(...) printf(__VA_ARGS) doesn't compile for some reason
+#define DEBUG_PRINT printf
 
 iconv_t iconv_utf16;
 char* DEBUGFS_PATH = "/.debug";
