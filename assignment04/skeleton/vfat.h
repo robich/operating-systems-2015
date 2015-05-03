@@ -103,7 +103,7 @@ struct vfat_data {
     off_t       fat_begin_offset;
     size_t      fat_size;
     struct stat root_inode;
-    struct fat_boot  fat_boot;
+    struct fat_boot_header  fat_boot;
     uint32_t*   fat; // use util::mmap_file() to map this directly into the memory 
 };
 
