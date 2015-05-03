@@ -2,7 +2,9 @@
 #ifndef VFAT_H
 #define VFAT_H
 
+#include <stdint.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 
 struct fat_boot_fat32 {
 	/*36*/	uint32_t	sectors_per_fat;//BPB_FATSz32
