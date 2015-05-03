@@ -104,6 +104,7 @@ struct vfat_data {
     size_t      fat_size;
     struct stat root_inode;
     struct fat_boot_header  fat_boot;
+    uint32_t root_cluster;
     uint32_t*   fat; // use util::mmap_file() to map this directly into the memory 
 };
 
