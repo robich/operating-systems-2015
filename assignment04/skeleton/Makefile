@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wall -g -O0 -D_FILE_OFFSET_BITS=64
+CFLAGS=-Wall -g -O0 -D_FILE_OFFSET_BITS=64 -std=c99
 LDFLAGS=-lfuse
 
 .PHONY: all
