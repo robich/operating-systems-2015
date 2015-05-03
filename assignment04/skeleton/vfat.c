@@ -32,6 +32,10 @@ vfat_init(const char *dev)
     DEBUG_PRINT("vfat_init(1)\n");
     
     struct fat_boot_header s;
+    
+    uint16_t rootDirSectors;
+    uint32_t fatSz, totSec, dataSec, countofClusters, first_fat;
+    uint8_t fat_0;
 
     iconv_utf16 = iconv_open("utf-8", "utf-16"); // from utf-16 to utf-8
     // These are useful so that we can setup correct permissions in the mounted directories
