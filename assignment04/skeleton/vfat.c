@@ -394,8 +394,9 @@ getfilename(char* nameext, char* filename) {
 	bool before_extension = true;
 	bool in_spaces = false;
 	bool in_extension = false;
-
-	for(int i = 0; i < 11; i++) {
+	
+	int i = 0;
+	for(i; i < 11; i++) {
 		if(nameext[i] < 0x20 ||
 			nameext[i] == 0x22 ||
 			nameext[i] == 0x2A ||
