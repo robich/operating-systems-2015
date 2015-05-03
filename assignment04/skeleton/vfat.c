@@ -29,6 +29,8 @@ char* DEBUGFS_PATH = "/.debug";
 static void
 vfat_init(const char *dev)
 {
+    DEBUG_PRINT("vfat_init(1)\n");
+    
     struct fat_boot_header s;
 
     iconv_utf16 = iconv_open("utf-8", "utf-16"); // from utf-16 to utf-8
@@ -44,8 +46,121 @@ vfat_init(const char *dev)
         err(1, "open(%s)", dev);
     if (pread(vfat_info.fd, &s, sizeof(s), 0) != sizeof(s))
         err(1, "read super block");
+        
+    // Throw error if not FAT32 volume
+	if(vfat_info.fat_boot.root_max_entries != 0) {
+		err(1,"[Error] root_max_entries must be 0 in FAT32 volumes.\n");
+	}
+	rootDirSectors = ((vfat_info.fat_boot.root_max_entries * 32) +
+		(vfat_info.fat_boot.bytes_per_sector - 1)) / vfat_info.fat_boot.bytes_per_sector;
 
-    /* XXX add your code here */
+	if(vfat_info.fat_boot.sectors_per_fat_small != 0){
+		fatSz = vfat_info.fat_boot.sectors_per_fat_small;
+	} else{
+		fatSz = vfat_info.fat_boot.fat32.sectors_per_fat;
+	}
+
+	if(vfat_info.fat_boot.total_sectors_small != 0){
+		totSec = vfat_info.fat_boot.total_sectors_small;
+	} else {
+		totSec = vfat_info.fat_boot.total_sectors;
+	}
+
+	dataSec = totSec - (vfat_info.fat_boot.reserved_sectors +
+	(vfat_info.fat_boot.fat_count * fatSz) + rootDirSectors);
+	countofClusters = dataSec / vfat_info.fat_boot.sectors_per_cluster;
+    
+    // See: http://www.win.tue.nl/~aeb/linux/fs/fat/fat-1.html for the deatils of FAT12, FAT16 and FAT32.
+    
+	if(countofClusters < 4085) {
+		err(1,"[Error] Volume is FAT12.\n");
+	} else if(countofClusters < 65525) {
+		err(1,"[Error] Volume is FAT16.\n");
+	} else {
+		DEBUG_PRINT("Volume looks like FAT32.\n");
+	}
+
+	// Check all other fields
+	if(((char*)&vfat_info.fat_boot)[510] != 0x55 &&
+		((char*)&vfat_info.fat_boot)[511] != (char) 0xAA) {
+		err(1, "[Error] 510-511 must correspond to signature 0x55aa\n");
+	}
+
+	if(vfat_info.fat_boot.jmp_boot[0] == 0xEB) {
+		if(vfat_info.fat_boot.jmp_boot[2] != 0x90) {
+			err(1, "[Error] bad jmp_boot[2]\n");
+		}
+	} else if(vfat_info.fat_boot.jmp_boot[0] != 0xE9){
+		err(1, "[Error] bad jmp_boot[0]\n");
+	}
+
+	if(vfat_info.fat_boot.bytes_per_sector != 512 &&
+		vfat_info.fat_boot.bytes_per_sector != 1024 &&
+		vfat_info.fat_boot.bytes_per_sector != 2048 &&
+		vfat_info.fat_boot.bytes_per_sector != 5096) {
+
+		err(1, "[Error] Illegal value for bytes_per_sector\n");
+	}
+
+	if(vfat_info.fat_boot.sectors_per_cluster != 1 &&
+		vfat_info.fat_boot.sectors_per_cluster % 2 != 0) {
+		err(1, "[Error] bad sectors_per_cluster.\n");
+	}
+
+	if(vfat_info.fat_boot.sectors_per_cluster *
+		vfat_info.fat_boot.bytes_per_sector > 32 * 1024) {
+		err(1, "[Error] Out of range bytes_per_sector * sectors_per_cluster\n");
+	}
+
+	if(vfat_info.fat_boot.reserved_sectors == 0) {
+		err(1, "[Error] Reserved_sectors cannot be zero.\n");
+	}
+
+	if(vfat_info.fat_boot.fat_count < 2) {
+		err(1, "[Error] fat fat_count must be at least two.\n");
+	}
+
+	if(vfat_info.fat_boot.root_max_entries != 0) {
+		err(1, "[Error] root_max_entries must be zero.\n");
+	}
+
+	if(vfat_info.fat_boot.total_sectors_small != 0) {
+		err(1, "[Error] total_sectors_small must be zero.\n");
+	}
+
+	if(vfat_info.fat_boot.media_info != 0xF0 &&
+		vfat_info.fat_boot.media_info < 0xF8) {
+		err(1, "[Error] Bad media descriptor type.\n");
+	}
+	
+	first_fat = vfat_info.fat_boot.reserved_sectors * vfat_info.fat_boot.bytes_per_sector;
+	if(lseek(vfat_info.fs, first_fat, SEEK_SET) == -1) {
+		err(1, "[Error] lseek(%u)", first_fat);
+	}
+
+	if(read(vfat_info.fs, &fat_0, sizeof(uint8_t)) != sizeof(uint8_t)) {
+		err(1, "[Error] read(%lu)", sizeof(uint8_t));
+	}
+	
+	if(fat_0 != vfat_info.fat_boot.media_info) {
+		err(1, "[Error] Media info is different in FAT[0]\n");
+	}
+
+	if(vfat_info.fat_boot.sectors_per_fat_small != 0) {
+		err(1, "[Error] sectors per fat small must be zero\n");
+	}
+
+	if(vfat_info.fat_boot.total_sectors == 0) {
+		err(1, "[Error] total_sectors must be non-zero\n");
+	}
+	
+	vfat_info.root_cluster = 0xFFFFFFF & vfat_info.fat_boot.fat32.root_cluster;
+
+	DEBUG_PRINT("Volume is FAT32 for sure.\n");
+	if(lseek(vfat_info.fs, 0, SEEK_SET) == -1) {
+		err(1, "[Error] lseek(0)");
+	}
+
     vfat_info.root_inode.st_ino = le32toh(s.root_cluster);
     vfat_info.root_inode.st_mode = 0555 | S_IFDIR;
     vfat_info.root_inode.st_nlink = 1;
