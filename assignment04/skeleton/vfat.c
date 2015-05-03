@@ -30,7 +30,7 @@ char* DEBUGFS_PATH = "/.debug";
 static void
 vfat_init(const char *dev)
 {
-    DEBUG_PRINT("vfat_init(1)\n");
+    DEBUG_PRINT("vfat_init(1): start of function\n");
     
     struct fat_boot_header s;
     
@@ -173,6 +173,8 @@ vfat_init(const char *dev)
     vfat_info.root_inode.st_gid = vfat_info.mount_gid;
     vfat_info.root_inode.st_size = 0;
     vfat_info.root_inode.st_atime = vfat_info.root_inode.st_mtime = vfat_info.root_inode.st_ctime = vfat_info.mount_time;
+    
+    DEBUG_PRINT("vfat_init(1): end of function\n");
 
 }
 
