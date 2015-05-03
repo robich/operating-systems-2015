@@ -1,15 +1,6 @@
-CC=gcc
-CFLAGS=-Wall -g -O0 -D_FILE_OFFSET_BITS=64
-LDFLAGS=-lfuse
-
-.PHONY: all
-all:vfat
-
-vfat: vfat.o util.o debugfs.o
-	$(CC) $(LDFLAGS) $^ -o $@
-
-%.o: %.cc *.h
-	$(CC) $(CFLAGS) -c $(INCL) $< -o $@
+all:
+	gcc -Wall -g -std=c99 -O0 -D_FILE_OFFSET_BITS=64 vfat.c -o vfat -lfuse
+	echo "Successfull compiled!"
 
 clean:
-	rm -f *.o vfat
+	rm -f vfat.o vfat
