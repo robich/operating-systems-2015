@@ -61,7 +61,7 @@ vfat_init(const char *dev)
 	if(vfat_info.fat_boot.sectors_per_fat_small != 0){
 		fatSz = vfat_info.fat_boot.sectors_per_fat_small;
 	} else{
-		fatSz = vfat_info.fat_boot.fat32.sectors_per_fat;
+		fatSz = vfat_info.sectors_per_fat;
 	}
 
 	if(vfat_info.fat_boot.total_sectors_small != 0){
@@ -138,11 +138,11 @@ vfat_init(const char *dev)
 	}
 	
 	first_fat = vfat_info.fat_boot.reserved_sectors * vfat_info.fat_boot.bytes_per_sector;
-	if(lseek(vfat_info.fs, first_fat, SEEK_SET) == -1) {
+	if(lseek(vfat_info.fd, first_fat, SEEK_SET) == -1) {
 		err(1, "[Error] lseek(%u)", first_fat);
 	}
 
-	if(read(vfat_info.fs, &fat_0, sizeof(uint8_t)) != sizeof(uint8_t)) {
+	if(read(vfat_info.fd, &fat_0, sizeof(uint8_t)) != sizeof(uint8_t)) {
 		err(1, "[Error] read(%lu)", sizeof(uint8_t));
 	}
 	
@@ -158,10 +158,10 @@ vfat_init(const char *dev)
 		err(1, "[Error] total_sectors must be non-zero\n");
 	}
 	
-	vfat_info.root_cluster = 0xFFFFFFF & vfat_info.fat_boot.fat32.root_cluster;
+	vfat_info.root_cluster = 0xFFFFFFF & vfat_info.fat_boot.root_cluster;
 
 	DEBUG_PRINT("Volume is FAT32 for sure.\n");
-	if(lseek(vfat_info.fs, 0, SEEK_SET) == -1) {
+	if(lseek(vfat_info.fd, 0, SEEK_SET) == -1) {
 		err(1, "[Error] lseek(0)");
 	}
 
