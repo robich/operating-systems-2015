@@ -174,6 +174,9 @@ vfat_init(const char *dev)
     vfat_info.root_inode.st_size = 0;
     vfat_info.root_inode.st_atime = vfat_info.root_inode.st_mtime = vfat_info.root_inode.st_ctime = vfat_info.mount_time;
     
+    vfat_info.fat = mmap(vfat_info.fd, s.reserved_sectors * s.bytes_per_sector, s.sectors_per_fat * s.bytes_per_sector);
+    // TODO: do not forget to unmap :)
+    
     DEBUG_PRINT("vfat_init(1): end of function\n");
 
 }
