@@ -176,7 +176,23 @@ int vfat_next_cluster(uint32_t c)
 {
     DEBUG_PRINT("vfat_next_cluster(1): start of function\n");
     /* TODO: Read FAT to actually get the next cluster */
-    return 0xffffff; // no next cluster
+    
+    int next_cluster;
+    int first_fat = vfat_info.fat_boot.reserved_sectors * vfat_info.fat_boot.bytes_per_sector;
+
+    if(lseek(vfat_info.fs, first_fat + c * sizeof(uint32_t), SEEK_SET) == -1) {
+        err(1, "lseek(%lu)", first_fat + c * sizeof(uint32_t));
+    }
+	
+    if(read(vfat_info.fs, &next_cluster, sizeof(uint32_t)) != sizeof(uint32_t)) {
+    	err(1, "read(%lu)",sizeof(uint32_t));
+    }
+    
+    if (next_cluster > 0) {
+    	return next_cluster;
+    } else {
+    	return 0xffffff; // no next cluster	
+    }
 }
 
 int vfat_readdir(uint32_t first_cluster, fuse_fill_dir_t callback, void *callbackdata)
