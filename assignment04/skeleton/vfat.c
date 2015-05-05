@@ -35,7 +35,7 @@ vfat_init(const char *dev)
     struct fat_boot_header s;
     
     uint16_t rootDirSectors;
-    uint32_t fatSz, totSec, dataSec, countofClusters, first_fat;
+    uint32_t fatSz, totSec, dataSec, countofClusters;
     uint8_t fat_0;
 
     iconv_utf16 = iconv_open("utf-8", "utf-16"); // from utf-16 to utf-8
@@ -116,7 +116,7 @@ vfat_init(const char *dev)
 		s.sectors_per_cluster != 16 &&
 		s.sectors_per_cluster != 32 &&
 		s.sectors_per_cluster != 64 &&
-		s.sectors_per_cluster != 128 &&) {
+		s.sectors_per_cluster != 128) {
 		// Is there a cleverer way of checking? Maybe, it's only 8 am...
 		err(1, "[Error] bad sectors_per_cluster.\n");
 	}
@@ -145,23 +145,6 @@ vfat_init(const char *dev)
 	if(s.media_info != 0xF0 &&
 		s.media_info < 0xF8) {
 		err(1, "[Error] Bad media descriptor type.\n");
-	}
-	
-	first_fat = s.reserved_sectors * s.bytes_per_sector;
-	if(lseek(vfat_info.fd, first_fat, SEEK_SET) == -1) {
-		err(1, "[Error] lseek(%u)", first_fat);
-	}
-
-	if(read(vfat_info.fd, &fat_0, sizeof(uint8_t)) != sizeof(uint8_t)) {
-		err(1, "[Error] read(%lu)", sizeof(uint8_t));
-	}
-	
-	if(fat_0 != s.media_info) {
-		err(1, "[Error] Media info is different in FAT[0]\n");
-	}
-
-	if(s.sectors_per_fat_small != 0) {
-		err(1, "[Error] sectors per fat small must be zero\n");
 	}
 
 	if(s.total_sectors == 0) {
