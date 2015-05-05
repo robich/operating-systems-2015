@@ -178,9 +178,9 @@ int vfat_next_cluster(uint32_t c)
     /* TODO: Read FAT to actually get the next cluster */
     
     int next_cluster;
-    int first_fat = vfat_info.fat_boot.reserved_sectors * vfat_info.fat_boot.bytes_per_sector;
+    int first_fat = vfat_info.reserved_sectors * vfat_info.bytes_per_sector;
 
-    if(lseek(vfat_info.fs, first_fat + c * sizeof(uint32_t), SEEK_SET) == -1) {
+    if(lseek(vfat_info.fd, first_fat + c * sizeof(uint32_t), SEEK_SET) == -1) {
         err(1, "lseek(%lu)", first_fat + c * sizeof(uint32_t));
     }
 	
