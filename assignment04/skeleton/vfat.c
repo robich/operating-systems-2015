@@ -304,9 +304,9 @@ int vfat_fuse_readdir(
     struct stat st;
     if(strcmp(path, "/") != 0) {
         vfat_resolve(path+1, &st);
-        vfat_readdir((uint32_t)st.st_ino, filler, callback_data);
+        vfat_readdir((uint32_t)st.st_ino, callback, callback_data);
     } else {
-        vfat_readdir(vfat_info.root_cluster, filler, callback_data);
+        vfat_readdir(vfat_info.root_cluster, callback, callback_data);
     }
     return 0;
 }
