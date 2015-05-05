@@ -5,5 +5,11 @@ if [ "$(id -u)" != "0" ]; then
    exit 1
 fi
 
-sudo mkdir $1
-sudo ./vfat -s -f -odirect_io /mnt/hgfs/shared/testfs/./testfs.fat $1
+dir=`pwd`/$1
+sudo mkdir $dir
+
+if [ $? -ne 0 ]; then
+    echo "Cannot create dir"
+fi
+
+sudo ./vfat -s -f -odirect_io /mnt/hgfs/shared/testfs/./testfs.fat $dir
