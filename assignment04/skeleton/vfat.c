@@ -206,6 +206,24 @@ int vfat_readdir(uint32_t first_cluster, fuse_fill_dir_t callback, void *callbac
     st.st_nlink = 1;
 
     /* XXX add your code here */
+    
+    bool first_cluster = true;
+    int end_of_read = 0;
+    bool eof = false;
+	while(!eof) {
+		end_of_read = read_cluster(next_cluster_no, callback, callbackdata, first_cluster);
+		first_cluster = false;
+
+		if(end_of_read == 0) {
+			eof = true;
+		} else {
+			next_cluster_no = 0x0FFFFFFF & vfat_next_cluster(next_cluster_no);
+			if(next_cluster_no >= (uint32_t) 0x0FFFFFF8) {
+				eof = true;
+			}
+		}
+	}
+
     return 0;
 }
 
