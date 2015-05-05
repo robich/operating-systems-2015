@@ -174,12 +174,14 @@ vfat_init(const char *dev)
 
 int vfat_next_cluster(uint32_t c)
 {
+    DEBUG_PRINT("vfat_next_cluster(1): start of function\n");
     /* TODO: Read FAT to actually get the next cluster */
     return 0xffffff; // no next cluster
 }
 
 int vfat_readdir(uint32_t first_cluster, fuse_fill_dir_t callback, void *callbackdata)
 {
+    DEBUG_PRINT("vfat_readdir(3): start of function\n");
     struct stat st; // we can reuse same stat entry over and over again
 
     memset(&st, 0, sizeof(st));
@@ -204,6 +206,7 @@ struct vfat_search_data {
 // This way you can get the struct stat of the subdirectory/file.
 int vfat_search_entry(void *data, const char *name, const struct stat *st, off_t offs)
 {
+    DEBUG_PRINT("vfat_search_entry(4): start of function\n");
     struct vfat_search_data *sd = data;
 
     if (strcmp(sd->name, name) != 0) return 0;
@@ -222,6 +225,7 @@ int vfat_search_entry(void *data, const char *name, const struct stat *st, off_t
 */
 int vfat_resolve(const char *path, struct stat *st)
 {
+    DEBUG_PRINT("vfat_resolve(2): start of function\n");
     /* TODO: Add your code here.
         You should tokenize the path (by slash separator) and then
         for each token search the directory for the file/dir with that name.
@@ -240,6 +244,7 @@ int vfat_resolve(const char *path, struct stat *st)
 // Get file attributes
 int vfat_fuse_getattr(const char *path, struct stat *st)
 {
+    DEBUG_PRINT("vfat_fuse_getattr(2): start of function\n");
     if (strncmp(path, DEBUGFS_PATH, strlen(DEBUGFS_PATH)) == 0) {
         // This is handled by debug virtual filesystem
         return debugfs_fuse_getattr(path + strlen(DEBUGFS_PATH), st);
@@ -252,6 +257,7 @@ int vfat_fuse_getattr(const char *path, struct stat *st)
 // Extended attributes useful for debugging
 int vfat_fuse_getxattr(const char *path, const char* name, char* buf, size_t size)
 {
+    DEBUG_PRINT("vfat_fuse_getxattr(3): start of function\n");
     struct stat st;
     int ret = vfat_resolve(path, &st);
     if (ret != 0) return ret;
@@ -272,6 +278,7 @@ int vfat_fuse_readdir(
         const char *path, void *callback_data,
         fuse_fill_dir_t callback, off_t unused_offs, struct fuse_file_info *unused_fi)
 {
+    DEBUG_PRINT("vfat_fuse_readdir(5): start of function\n");
     if (strncmp(path, DEBUGFS_PATH, strlen(DEBUGFS_PATH)) == 0) {
         // This is handled by debug virtual filesystem
         return debugfs_fuse_readdir(path + strlen(DEBUGFS_PATH), callback_data, callback, unused_offs, unused_fi);
@@ -285,6 +292,7 @@ int vfat_fuse_read(
         const char *path, char *buf, size_t size, off_t offs,
         struct fuse_file_info *unused)
 {
+    DEBUG_PRINT("vfat_fuse_read(4): start of function\n");
     if (strncmp(path, DEBUGFS_PATH, strlen(DEBUGFS_PATH)) == 0) {
         // This is handled by debug virtual filesystem
         return debugfs_fuse_read(path + strlen(DEBUGFS_PATH), buf, size, offs, unused);
@@ -298,6 +306,7 @@ int vfat_fuse_read(
 int
 vfat_opt_args(void *data, const char *arg, int key, struct fuse_args *oargs)
 {
+    DEBUG_PRINT("vfat_opt_args(4): start of function\n");
     if (key == FUSE_OPT_KEY_NONOPT && !vfat_info.dev) {
         vfat_info.dev = strdup(arg);
         return (0);
