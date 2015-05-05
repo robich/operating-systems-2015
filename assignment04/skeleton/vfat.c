@@ -53,6 +53,9 @@ vfat_init(const char *dev)
         err(1, "read super block");
         
     // Throw error if not FAT32 volume
+    // See: http://www.win.tue.nl/~aeb/linux/fs/fat/fat-1.html for the deatils of FAT12, FAT16 and FAT32.
+    // See: http://read.pudn.com/downloads77/ebook/294884/FAT32%20Spec%20%28SDA%20Contribution%29.pdf for complete doc from Microsoft
+
 	if(s.root_max_entries != 0) {
 		err(1,"[Error] root_max_entries must be 0 in FAT32 volumes.\n");
 	}
@@ -70,19 +73,18 @@ vfat_init(const char *dev)
 	} else {
 		totSec = s.total_sectors;
 	}
-
+	
+	/* See page 17 of microsoft specs */
 	dataSec = totSec - (s.reserved_sectors +
 	(s.fat_count * fatSz) + rootDirSectors);
 	countofClusters = dataSec / s.sectors_per_cluster;
-    
-    // See: http://www.win.tue.nl/~aeb/linux/fs/fat/fat-1.html for the deatils of FAT12, FAT16 and FAT32.
     
 	if(countofClusters < 4085) {
 		err(1,"[Error] Volume is FAT12.\n");
 	} else if(countofClusters < 65525) {
 		err(1,"[Error] Volume is FAT16.\n");
 	} else {
-		DEBUG_PRINT("Volume looks like FAT32.\n");
+		DEBUG_PRINT("Volume looks like FAT32: it has %d clusters\n", countofClusters);
 	}
 
 	// Check all other fields
@@ -108,7 +110,14 @@ vfat_init(const char *dev)
 	}
 
 	if(s.sectors_per_cluster != 1 &&
-		s.sectors_per_cluster % 2 != 0) {
+		s.sectors_per_cluster != 2 &&
+		s.sectors_per_cluster != 4 &&
+		s.sectors_per_cluster != 8 &&
+		s.sectors_per_cluster != 16 &&
+		s.sectors_per_cluster != 32 &&
+		s.sectors_per_cluster != 64 &&
+		s.sectors_per_cluster != 128 &&) {
+		// Is there a cleverer way of checking? Maybe, it's only 8 am...
 		err(1, "[Error] bad sectors_per_cluster.\n");
 	}
 
@@ -122,7 +131,7 @@ vfat_init(const char *dev)
 	}
 
 	if(s.fat_count < 2) {
-		err(1, "[Error] fat fat_count must be at least two.\n");
+		err(1, "[Error] fat_count must be one or two.\n");
 	}
 
 	if(s.root_max_entries != 0) {
@@ -162,9 +171,6 @@ vfat_init(const char *dev)
 	vfat_info.root_cluster = 0xFFFFFFF & s.root_cluster;
 
 	DEBUG_PRINT("Volume is FAT32 for sure.\n");
-	if(lseek(vfat_info.fd, 0, SEEK_SET) == -1) {
-		err(1, "[Error] lseek(0)");
-	}
 
     vfat_info.root_inode.st_ino = le32toh(s.root_cluster);
     vfat_info.root_inode.st_mode = 0555 | S_IFDIR;
