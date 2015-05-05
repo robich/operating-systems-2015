@@ -184,7 +184,7 @@ int vfat_next_cluster(uint32_t c)
         err(1, "lseek(%lu)", first_fat + c * sizeof(uint32_t));
     }
 	
-    if(read(vfat_info.fs, &next_cluster, sizeof(uint32_t)) != sizeof(uint32_t)) {
+    if(read(vfat_info.fd, &next_cluster, sizeof(uint32_t)) != sizeof(uint32_t)) {
     	err(1, "read(%lu)",sizeof(uint32_t));
     }
     
