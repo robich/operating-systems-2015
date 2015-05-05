@@ -294,13 +294,20 @@ int vfat_fuse_readdir(
         const char *path, void *callback_data,
         fuse_fill_dir_t callback, off_t unused_offs, struct fuse_file_info *unused_fi)
 {
-    DEBUG_PRINT("vfat_fuse_readdir(5): start of function\n");
+    DEBUG_PRINT("vfat_fuse_readdir(5): path = %s\n", path);
+    
     if (strncmp(path, DEBUGFS_PATH, strlen(DEBUGFS_PATH)) == 0) {
         // This is handled by debug virtual filesystem
         return debugfs_fuse_readdir(path + strlen(DEBUGFS_PATH), callback_data, callback, unused_offs, unused_fi);
     }
-    /* TODO: Add your code here. You should reuse vfat_readdir and vfat_resolve functions
-    */
+    
+    struct stat st;
+    if(strcmp(path, "/") != 0) {
+        vfat_resolve(path+1, &st);
+        vfat_readdir((uint32_t)st.st_ino, filler, callback_data);
+    } else {
+        vfat_readdir(vfat_info.root_cluster, filler, callback_data);
+    }
     return 0;
 }
 
