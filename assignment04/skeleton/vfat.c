@@ -207,11 +207,13 @@ int vfat_readdir(uint32_t first_cluster, fuse_fill_dir_t callback, void *callbac
 
     /* XXX add your code here */
     
-    bool first_cluster = true;
+    bool first_cluster_bool = true;
     int end_of_read = 0;
     bool eof = false;
+    uint32_t next_cluster_no = first_cluster;
+
 	while(!eof) {
-		end_of_read = read_cluster(next_cluster_no, callback, callbackdata, first_cluster);
+		end_of_read = read_cluster(next_cluster_no, callback, callbackdata, first_cluster_bool);
 		first_cluster = false;
 
 		if(end_of_read == 0) {
