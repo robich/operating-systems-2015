@@ -212,6 +212,160 @@ int vfat_next_cluster(uint32_t c)
     }
 }
 
+void seek_cluster(uint32_t cluster_no) {
+    if(cluster_no < 2) {
+	err(1, "cluster number < 2");
+    }
+
+    uint32_t firstDataSector = vfat_info.fat_boot.reserved_sectors +
+	(vfat_info.fat_boot.fat_count * vfat_info.fat_boot.fat32.sectors_per_fat);
+    uint32_t firstSectorofCluster = ((cluster_no - 2) * vfat_info.fat_boot.sectors_per_cluster) + firstDataSector;
+    if(lseek(vfat_info.fs, firstSectorofCluster * vfat_info.fat_boot.bytes_per_sector, SEEK_SET) == -1) {
+	err(1, "lseek cluster_no %d\n", cluster_no);
+    }
+}
+
+unsigned char
+chkSum (unsigned char *pFcbName) {
+	short fcbNameLen;
+	unsigned char sum;
+
+	sum = 0;
+	for (fcbNameLen=11; fcbNameLen!=0; fcbNameLen--) {
+		// NOTE: The operation is an unsigned char rotate right
+		sum = ((sum & 1) ? 0x80 : 0) + (sum >> 1) + *pFcbName++;
+	}
+	return (sum);
+}
+
+time_t
+conv_time(uint16_t date_entry, uint16_t time_entry) {
+	struct tm * time_info;
+	time_t raw_time;
+
+	time(&raw_time);
+	time_info = localtime(&raw_time);
+	time_info->tm_sec = (time_entry & 0x1f) << 1;
+	time_info->tm_min = (time_entry & 0x1E0) >> 5;
+	time_info->tm_hour = (time_entry & 0xFE00) >> 11;
+	time_info->tm_mday = date_entry & 0x1F;
+	time_info->tm_mon = ((date_entry & 0x1E0) >> 5) - 1;
+	time_info->tm_year = ((date_entry & 0xFE00) >> 9) + 80;
+	return mktime(time_info);
+}
+
+void
+setStat(struct fat32_direntry dir_entry, char* buffer, fuse_fill_dir_t filler, void *fillerdata, uint32_t cluster_no){
+	struct stat* stat_str = malloc(sizeof(struct stat));
+			memset(stat_str, 0, sizeof(struct stat));
+			stat_str->st_dev = 0; // Ignored by FUSE
+			stat_str->st_ino = cluster_no; // Ignored by FUSE unless overridden
+			if((dir_entry.attr & ATTR_READ_ONLY) == ATTR_READ_ONLY){
+				stat_str->st_mode = S_IRUSR | S_IRGRP | S_IROTH;
+			}
+			else{
+				stat_str->st_mode = S_IRWXU | S_IRWXG | S_IRWXO;
+			}
+			if((dir_entry.attr & ATTR_DIRECTORY) == ATTR_DIRECTORY) {
+				stat_str->st_mode |= S_IFDIR;
+				int cnt = 0;
+				uint32_t next_cluster_no = cluster_no;
+				off_t pos = lseek(vfat_info.fs, 0, SEEK_CUR);
+				while(next_cluster_no < (uint32_t) 0x0FFFFFF8) {
+					cnt++;
+					next_cluster_no = next_cluster(0x0FFFFFFF & next_cluster_no);
+				}
+				if(lseek(vfat_info.fs, pos, SEEK_SET) == -1) {
+					err(1, "Couldn't return to initial position: %lx", pos);
+				}
+				stat_str->st_size = cnt * vfat_info.fat_boot.sectors_per_cluster*vfat_info.fat_boot.bytes_per_sector;
+			}
+			else {
+				stat_str->st_mode |= S_IFREG;
+				stat_str->st_size = dir_entry.size;
+			}
+			stat_str->st_nlink = 1;
+			stat_str->st_uid = mount_uid;
+			stat_str->st_gid = mount_gid;
+			stat_str->st_rdev = 0;
+			stat_str->st_blksize = 0; // Ignored by FUSE
+			stat_str->st_blocks = 1;
+			stat_str->st_atime = conv_time(dir_entry.atime_date, 0);
+			stat_str->st_mtime = conv_time(dir_entry.mtime_date, dir_entry.mtime_time);
+			stat_str->st_ctime = conv_time(dir_entry.ctime_date, dir_entry.ctime_time);
+			filler(fillerdata, buffer, stat_str, 0);
+			free(stat_str);
+}
+
+char*
+getfilename(char* nameext, char* filename) {
+	if(nameext[0] == 0x20) {
+	    err(1, "filename[0] is 0x20");
+	}
+
+	uint32_t fileNameCnt = 0;
+	bool before_extension = true;
+	bool in_spaces = false;
+	bool in_extension = false;
+	
+	int i = 0;
+	for(i; i < 11; i++) {
+		if(nameext[i] < 0x20 ||
+			nameext[i] == 0x22 ||
+			nameext[i] == 0x2A ||
+			nameext[i] == 0x2B ||
+			nameext[i] == 0x2C ||
+			nameext[i] == 0x2E ||
+			nameext[i] == 0x2F ||
+			nameext[i] == 0x3A ||
+			nameext[i] == 0x3B ||
+			nameext[i] == 0x3C ||
+			nameext[i] == 0x3D ||
+			nameext[i] == 0x3E ||
+			nameext[i] == 0x3F ||
+			nameext[i] == 0x5B ||
+			nameext[i] == 0x5C ||
+			nameext[i] == 0x5D ||
+			nameext[i] == 0x7C) {
+
+			err(1, "invalid character in filename %x at %d\n", nameext[i] & 0xFF, i);
+		}
+
+		if(before_extension) {
+		    if(nameext[i] == 0x20) {
+			before_extension = false;
+			in_spaces = true;
+			filename[fileNameCnt++] = '.';
+		    } else if(i == 8) {
+			before_extension = false;
+			in_spaces = true;
+			filename[fileNameCnt++] = '.';
+			filename[fileNameCnt++] = nameext[i];
+			in_extension = true;
+		    } else {
+			filename[fileNameCnt++] = nameext[i];
+		    }
+		} else if(in_spaces) {
+			if(nameext[i] != 0x20) {
+			    in_spaces = false;
+			    in_extension = true;
+			    filename[fileNameCnt++] = nameext[i];
+			}
+		} else if(in_extension) {
+			if(nameext[i] == 0x20) {
+			    break;
+			} else {
+			    filename[fileNameCnt++] = nameext[i];
+			}
+		}
+	}
+
+	if(filename[fileNameCnt - 1] == '.') {
+	    filename--;
+	}
+	filename[fileNameCnt] = '\0';
+	return filename;
+}
 
 static int
 read_cluster(uint32_t cluster_no, fuse_fill_dir_t filler, void *fillerdata,bool first_cluster) {
