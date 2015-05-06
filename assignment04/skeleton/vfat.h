@@ -8,6 +8,7 @@
 
 #include <stdbool.h>
 #include <sys/types.h>
+#include <fuse.h>
 
 // Boot sector
 struct fat_boot_header {
