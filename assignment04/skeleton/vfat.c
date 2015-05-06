@@ -196,6 +196,124 @@ int vfat_next_cluster(uint32_t c)
     }
 }
 
+
+static int
+read_cluster(uint32_t cluster_no, fuse_fill_dir_t filler, void *fillerdata,bool first_cluster) {
+	// todo change
+	uint8_t check_sum = '\0';
+	char* buffer = calloc(MAX_NAME_SIZE*2, sizeof(char)); // Max size of name: 13 * 0x14 = 260
+	char* char_buffer = calloc(MAX_NAME_SIZE, sizeof(char));
+	int i, j, seq_nb = 0;
+	size_t in_byte_size = 2 * MAX_NAME_SIZE, out_byte_size = MAX_NAME_SIZE;
+	struct fat32_direntry short_entry;
+	struct fat32_direntry_long long_entry;
+	memset(buffer, 0, 2*MAX_NAME_SIZE);
+
+	seek_cluster(cluster_no);
+
+	for(i = 0; i < vfat_info.fat_boot.sectors_per_cluster*vfat_info.fat_boot.bytes_per_sector; i+=32) {
+		if(read(vfat_info.fs, &short_entry, 32) != 32){
+			err(1, "read(short_dir)");
+		}
+
+		if(i < 64 && first_cluster && cluster_no != 2){
+			char* filename = (i == 0) ? "." : "..";
+			setStat(short_entry,filename,filler,fillerdata,
+				(((uint32_t)short_entry.cluster_hi) << 16) | ((uint32_t)short_entry.cluster_lo));
+
+			continue;
+		}
+
+		if(((uint8_t) short_entry.nameext[0]) == 0xE5){
+			continue;
+		} else if(short_entry.nameext[0] == 0x00) {
+			free(buffer);
+			free(char_buffer);
+			return END_OF_DIRECTORY;
+		} else if(short_entry.nameext[0] == 0x05) {
+			short_entry.nameext[0] = (char) 0xE5;
+		}
+
+		if((short_entry.attr & ATTR_LONG_NAME) == ATTR_LONG_NAME) {
+			long_entry = *((struct fat32_direntry_long *) &short_entry);
+			if((long_entry.seq & 0x40) == 0x40) {
+				seq_nb = (long_entry.seq & 0x3f) - 1;
+				check_sum = long_entry.csum;
+
+				for(j = 0; j < 13; j++) {
+					if(j < 5 && long_entry.name1[j] != 0xFFFF) {
+						buffer[j*2] = long_entry.name1[j];
+						buffer[j*2+1] = long_entry.name1[j] >> 8;
+					} else if(j < 11 && long_entry.name2[j - 5] != 0xFFFF) {
+						buffer[j*2] = long_entry.name2[j-5];
+						buffer[j*2+1] = long_entry.name2[j-5] >> 8;
+					} else if(j < 13 && long_entry.name3[j - 11] != 0xFFFF) {
+						buffer[j*2] = long_entry.name3[j-11];
+						buffer[j*2+1] = long_entry.name3[j-11] >> 8;
+					}
+				}
+			} else if (check_sum == long_entry.csum  && long_entry.seq == seq_nb) {
+				seq_nb -= 1;
+
+				char tmp[MAX_NAME_SIZE*2];
+				memset(tmp, 0, MAX_NAME_SIZE*2);
+
+				for(j = 0; j < MAX_NAME_SIZE*2; j++) {
+					tmp[j] = buffer[j];
+				}
+
+				memset(buffer, 0, MAX_NAME_SIZE*2);
+
+				for(j = 0; j < MAX_NAME_SIZE; j++) {
+					if(j < 5 && long_entry.name1[j] != 0xFFFF) {
+						buffer[j*2] = long_entry.name1[j];
+						buffer[j*2+1] = long_entry.name1[j] >> 8;
+					} else if(j < 11 && long_entry.name2[j - 5] != 0xFFFF) {
+						buffer[j*2] = long_entry.name2[j - 5];
+						buffer[j*2+1] = long_entry.name2[j - 5] >> 8;
+					} else if(j < 13 && long_entry.name3[j - 11] != 0xFFFF) {
+						buffer[j*2] = long_entry.name3[j - 11];
+						buffer[j*2+1] = long_entry.name3[j - 11] >> 8;
+					} else if(j >= 13 && ((uint16_t*)tmp)[j - 13] != 0xFFFF){
+						buffer[j*2] = tmp[(j - 13)*2];
+						buffer[j*2+1] = tmp[(j - 13)*2+1];
+					}
+				}
+			} else {
+				seq_nb = 0;
+				check_sum = '\0';
+				memset(buffer, 0, MAX_NAME_SIZE*2);
+				err(1, "error: Bad sequence number or checksum\n");
+			}
+		} else if((short_entry.attr & ATTR_VOLUME_ID) == ATTR_VOLUME_ID) {
+			seq_nb = 0;
+			check_sum = '\0';
+			memset(buffer, 0, MAX_NAME_SIZE*2);
+		} else if(check_sum == chkSum((unsigned char *) &(short_entry.nameext)) && seq_nb == 0) {
+			char* buffer_pointer = buffer;
+			char* char_buffer_pointer = char_buffer;
+			iconv(iconv_utf16, &buffer_pointer, &in_byte_size, &char_buffer_pointer, &out_byte_size);
+			in_byte_size = MAX_NAME_SIZE*2;
+			out_byte_size = MAX_NAME_SIZE;
+			char *filename = char_buffer;
+			setStat(short_entry,filename,filler,fillerdata,
+				(((uint32_t)short_entry.cluster_hi) << 16) | ((uint32_t)short_entry.cluster_lo));
+			check_sum = '\0';
+			memset(buffer, 0, MAX_NAME_SIZE);
+		} else {
+			char *filename = char_buffer;
+			getfilename(short_entry.nameext, filename);
+			setStat(short_entry,filename,filler,fillerdata,
+				(((uint32_t)short_entry.cluster_hi) << 16) | ((uint32_t)short_entry.cluster_lo));
+		}
+	}
+
+	free(buffer);
+	free(char_buffer);
+	return 1
+}
+
+
 int vfat_readdir(uint32_t first_cluster, fuse_fill_dir_t callback, void *callbackdata)
 {
     DEBUG_PRINT("vfat_readdir(3): start of function\n");
