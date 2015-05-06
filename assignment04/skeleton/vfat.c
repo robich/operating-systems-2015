@@ -235,7 +235,7 @@ read_cluster(uint32_t cluster_no, fuse_fill_dir_t filler, void *fillerdata,bool 
 		} else if(short_entry.nameext[0] == 0x00) {
 			free(buffer);
 			free(char_buffer);
-			return END_OF_DIRECTORY;
+			return 0;
 		} else if(short_entry.nameext[0] == 0x05) {
 			short_entry.nameext[0] = (char) 0xE5;
 		}
