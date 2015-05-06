@@ -17,12 +17,16 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <sys/mman.h>
+#include <time.h>
+#include <signal.h>
+
 #include "vfat.h"
 #include "util.h"
 #include "debugfs.h"
 
 //#define DEBUG_PRINT(...) printf(__VA_ARGS) doesn't compile for some reason
-#define DEBUG_PRINT 
+#define DEBUG_PRINT printf
 #define MAX_NAME_SIZE (13 * 0x14)
 
 
