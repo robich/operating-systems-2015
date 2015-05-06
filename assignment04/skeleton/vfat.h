@@ -116,3 +116,8 @@ int vfat_fuse_getattr(const char *path, struct stat *st);
 ///
 
 #endif
+void seek_cluster(uint32_t cluster_no);
+static int read_cluster(uint32_t cluster_no, fuse_fill_dir_t filler, void *fillerdata,bool first_cluster);
+char* getfilename(char* nameext, char* filename);
+uint32_t next_cluster(uint32_t cluster_no);
+void setStat(struct fat32_direntry dir_entry, char* buffer, fuse_fill_dir_t filler, void *fillerdata, uint32_t cluster_no);
