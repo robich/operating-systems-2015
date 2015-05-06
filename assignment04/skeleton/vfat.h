@@ -103,6 +103,7 @@ struct vfat_data {
     size_t      cluster_size;
     off_t       fat_begin_offset;
     size_t      fat_size;
+    uint8_t     fat_count;
     struct stat root_inode;
     uint32_t*   fat; // use util::mmap_file() to map this directly into the memory 
 };
