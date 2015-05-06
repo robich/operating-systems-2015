@@ -218,7 +218,7 @@ void seek_cluster(uint32_t cluster_no) {
     }
 
     uint32_t firstDataSector = vfat_info.reserved_sectors +
-	(vfat_info.fat_count * vfat_info.fat32.sectors_per_fat);
+	(vfat_info.fat.fat_count * vfat_info.sectors_per_fat); // todo check
     uint32_t firstSectorofCluster = ((cluster_no - 2) * vfat_info.sectors_per_cluster) + firstDataSector;
     if(lseek(vfat_info.fd, firstSectorofCluster * vfat_info.bytes_per_sector, SEEK_SET) == -1) {
 	err(1, "lseek cluster_no %d\n", cluster_no);
@@ -278,7 +278,7 @@ setStat(struct fat32_direntry dir_entry, char* buffer, fuse_fill_dir_t filler, v
 				if(lseek(vfat_info.fd, pos, SEEK_SET) == -1) {
 					err(1, "Couldn't return to initial position: %lx", pos);
 				}
-				stat_str->st_size = cnt * vfat_info.fat_boot.sectors_per_cluster*vfat_info.fat_boot.bytes_per_sector;
+				stat_str->st_size = cnt * vfat_info.sectors_per_cluster*vfat_info.bytes_per_sector;
 			}
 			else {
 				stat_str->st_mode |= S_IFREG;
