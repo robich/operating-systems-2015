@@ -22,7 +22,9 @@
 #include "debugfs.h"
 
 //#define DEBUG_PRINT(...) printf(__VA_ARGS) doesn't compile for some reason
-#define DEBUG_PRINT printf
+#define DEBUG_PRINT 
+#define MAX_NAME_SIZE (13 * 0x14)
+
 
 iconv_t iconv_utf16;
 char* DEBUGFS_PATH = "/.debug";
@@ -211,8 +213,8 @@ read_cluster(uint32_t cluster_no, fuse_fill_dir_t filler, void *fillerdata,bool 
 
 	seek_cluster(cluster_no);
 
-	for(i = 0; i < vfat_info.fat_boot.sectors_per_cluster*vfat_info.fat_boot.bytes_per_sector; i+=32) {
-		if(read(vfat_info.fs, &short_entry, 32) != 32){
+	for(i = 0; i < vfat_info.sectors_per_cluster * vfat_info.bytes_per_sector; i+=32) {
+		if(read(vfat_info.fd, &short_entry, 32) != 32){
 			err(1, "read(short_dir)");
 		}
 
@@ -310,7 +312,7 @@ read_cluster(uint32_t cluster_no, fuse_fill_dir_t filler, void *fillerdata,bool 
 
 	free(buffer);
 	free(char_buffer);
-	return 1
+	return 1;
 }
 
 
