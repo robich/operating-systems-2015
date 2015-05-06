@@ -29,6 +29,16 @@
 #define DEBUG_PRINT printf
 #define MAX_NAME_SIZE (13 * 0x14)
 
+#define ATTR_READ_ONLY 0x01
+#define ATTR_HIDDEN 0x02
+#define ATTR_SYSTEM 0x04
+#define ATTR_VOLUME_ID 0x08
+#define ATTR_DIRECTORY 0x10
+#define ATTR_ARCHIVE 0x20
+#define VFAT_ATTR_LFN 0xf
+#define ATTR_LONG_NAME (ATTR_READ_ONLY | ATTR_HIDDEN | ATTR_SYSTEM | ATTR_VOLUME_ID)
+#define VFAT_ATTR_INVAL (0x80|0x40|0x08)
+
 
 iconv_t iconv_utf16;
 char* DEBUGFS_PATH = "/.debug";
