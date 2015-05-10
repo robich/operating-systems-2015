@@ -217,7 +217,7 @@ read_cluster(uint32_t cluster_no, fuse_fill_dir_t callback, void *callbackdata,b
 
 		if(i < 64 && first_cluster && cluster_no != 2){
 			char* filename = (i == 0) ? "." : "..";
-			setStat(short_entry,filename,callback,callbackdata,
+			vfat_set_stat(short_entry,filename,callback,callbackdata,
 			(((uint32_t)short_entry.cluster_hi) << 16) | ((uint32_t)short_entry.cluster_lo));
 
 			continue;
@@ -295,14 +295,14 @@ read_cluster(uint32_t cluster_no, fuse_fill_dir_t callback, void *callbackdata,b
 			in_byte_size = MAX_NAME_SIZE*2;
 			out_byte_size = MAX_NAME_SIZE;
 			char *filename = char_buffer;
-			setStat(short_entry,filename,callback,callbackdata,
+			vfat_set_stat(short_entry,filename,callback,callbackdata,
 			(((uint32_t)short_entry.cluster_hi) << 16) | ((uint32_t)short_entry.cluster_lo));
 			check_sum = '\0';
 			memset(buffer, 0, MAX_NAME_SIZE);
 		} else {
 			char *filename = char_buffer;
 			vfat_get_file_name(short_entry.nameext, filename);
-			setStat(short_entry,filename,callback,callbackdata,
+			vfat_set_stat(short_entry,filename,callback,callbackdata,
 			(((uint32_t)short_entry.cluster_hi) << 16) | ((uint32_t)short_entry.cluster_lo));
 		}
 	}
@@ -330,7 +330,7 @@ conv_time(uint16_t date_entry, uint16_t time_entry) {
 
 
 void
-setStat(struct fat32_direntry dir_entry, char* buffer, fuse_fill_dir_t callback, void *callbackdata, uint32_t cluster_no){
+vfat_set_stat(struct fat32_direntry dir_entry, char* buffer, fuse_fill_dir_t callback, void *callbackdata, uint32_t cluster_no){
 	struct stat* stat_str = malloc(sizeof(struct stat));
 	memset(stat_str, 0, sizeof(struct stat));
 	stat_str->st_dev = 0; // Ignored by FUSE
