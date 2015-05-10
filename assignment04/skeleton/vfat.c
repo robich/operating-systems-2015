@@ -25,6 +25,7 @@
 #define MAX_NAME_SIZE (13 * 0x14)
 
 iconv_t iconv_utf16;
+char* DEBUGFS_PATH = "/.debug";
 
 void seek_cluster(uint32_t cluster_no) {
 	if(cluster_no < 2) {
@@ -642,6 +643,7 @@ fuse_fill_dir_t callback, off_t unused_offs, struct fuse_file_info *unused_fi)
 		vfat_readdir((uint32_t)st.st_ino, callback, callback_data);
 	} else {
 		vfat_readdir(vfat_info.root_cluster, callback, callback_data);
+		return debugfs_fuse_readdir(path + strlen(DEBUGFS_PATH), callback_data, callback, unused_offs, unused_fi);
 	}
 	return 0;
 }
@@ -652,12 +654,11 @@ struct fuse_file_info *unused)
 {
 	DEBUG_PRINT("fuse read %s\n", path);
 	
-	/*if (strncmp(path, DEBUGFS_PATH, strlen(DEBUGFS_PATH)) == 0) {
+	if (strncmp(path, DEBUGFS_PATH, strlen(DEBUGFS_PATH)) == 0) {
 		// This is handled by debug virtual filesystem
 		return debugfs_fuse_read(path + strlen(DEBUGFS_PATH), buf, size, offs, unused);
-	}*/
-	/* TODO: Add your code here. Look at debugfs_fuse_read for example interaction.
-		*/
+	}
+	/* TODO: Add your code here. Look at debugfs_fuse_read for example interaction.*/
 
 	struct stat st;
 	vfat_resolve(path+1, &st);
