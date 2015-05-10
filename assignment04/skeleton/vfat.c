@@ -196,22 +196,30 @@ int vfat_next_cluster(uint32_t c)
     DEBUG_PRINT("vfat_next_cluster(1): start of function\n");
     /* TODO: Read FAT to actually get the next cluster */
     
-    int next_cluster;
-    int first_fat = vfat_info.reserved_sectors * vfat_info.bytes_per_sector;
+    uint32_t next_cluster, next_cluster_check;
+	uint32_t first_fat = vfat_info.fat_boot.reserved_sectors * vfat_info.fat_boot.bytes_per_sector;
 
-    if(lseek(vfat_info.fd, first_fat + c * sizeof(uint32_t), SEEK_SET) == -1) {
-        err(1, "lseek(%lu)", first_fat + c * sizeof(uint32_t));
-    }
-	
-    if(read(vfat_info.fd, &next_cluster, sizeof(uint32_t)) != sizeof(uint32_t)) {
-    	err(1, "read(%lu)",sizeof(uint32_t));
-    }
-    
-    if (next_cluster > 0) {
-    	return next_cluster;
-    } else {
-    	return 0xffffff; // no next cluster	
-    }
+	if(lseek(vfat_info.fd, first_fat + cluster_no * sizeof(uint32_t), SEEK_SET) == -1) {
+		err(1, "lseek(%lu)", first_fat + cluster_no * sizeof(uint32_t));
+	}
+
+	if(read(vfat_info.fd, &next_cluster, sizeof(uint32_t)) != sizeof(uint32_t)) {
+		err(1, "read(%lu)",sizeof(uint32_t));
+	}
+
+	if(lseek(vfat_info.fd, first_fat + vfat_info.sectors_per_fat * vfat_info.bytes_per_sector + cluster_no * sizeof(uint32_t) , SEEK_SET) == -1) {
+		err(1, "lseek(%d)", first_fat);
+	}
+
+	if(read(vfat_info.fd, &next_cluster_check, sizeof(uint32_t)) != sizeof(uint32_t)) {
+		err(1, "read(%lu)", sizeof(uint32_t));
+	}
+
+	if(next_cluster_check == next_cluster) {
+		return next_cluster;
+	}
+
+	err(1, "[Error] Bad FAT\n");
 }
 
 void seek_cluster(uint32_t cluster_no) {
@@ -223,7 +231,7 @@ void seek_cluster(uint32_t cluster_no) {
 	(vfat_info.fat_count * vfat_info.sectors_per_fat); // todo check
     uint32_t firstSectorofCluster = ((cluster_no - 2) * vfat_info.sectors_per_cluster) + firstDataSector;
     if(lseek(vfat_info.fd, firstSectorofCluster * vfat_info.bytes_per_sector, SEEK_SET) == -1) {
-	err(1, "lseek cluster_no %d\n", cluster_no);
+	err(1, "[Error] lseek failed for cluster_no %d\n", cluster_no);
     }
 }
 
