@@ -28,7 +28,7 @@
 iconv_t iconv_utf16;
 char* DEBUGFS_PATH = "/.debug";
 
-void vfat_seek_cluster(uint32_t cluster_no) {
+void seek_cluster(uint32_t cluster_no) {
 	if(cluster_no < 2) {
 		err(1, "[Error] cluster number < 2\n");
 	}
@@ -197,8 +197,8 @@ chkSum (unsigned char *pFcbName) {
 }
 
 
-int
-vfat_read_cluster(uint32_t cluster_no, fuse_fill_dir_t callback, void *callbackdata,bool first_cluster) {
+static int
+read_cluster(uint32_t cluster_no, fuse_fill_dir_t callback, void *callbackdata,bool first_cluster) {
 	uint8_t check_sum = '\0';
 	char* buffer = calloc(MAX_NAME_SIZE*2, sizeof(char)); // Max size of name: 13 * 0x14 = 260
 	char* char_buffer = calloc(MAX_NAME_SIZE, sizeof(char));
@@ -208,7 +208,7 @@ vfat_read_cluster(uint32_t cluster_no, fuse_fill_dir_t callback, void *callbackd
 	struct fat32_direntry_long long_entry;
 	memset(buffer, 0, 2*MAX_NAME_SIZE);
 
-	vfat_seek_cluster(cluster_no);
+	seek_cluster(cluster_no);
 
 	for(i = 0; i < vfat_info.fat_boot.sectors_per_cluster*vfat_info.fat_boot.bytes_per_sector; i+=32) {
 		if(read(vfat_info.fd, &short_entry, 32) != 32){
@@ -217,7 +217,7 @@ vfat_read_cluster(uint32_t cluster_no, fuse_fill_dir_t callback, void *callbackd
 
 		if(i < 64 && first_cluster && cluster_no != 2){
 			char* filename = (i == 0) ? "." : "..";
-			vfat_set_stat(short_entry,filename,callback,callbackdata,
+			setStat(short_entry,filename,callback,callbackdata,
 			(((uint32_t)short_entry.cluster_hi) << 16) | ((uint32_t)short_entry.cluster_lo));
 
 			continue;
@@ -295,14 +295,14 @@ vfat_read_cluster(uint32_t cluster_no, fuse_fill_dir_t callback, void *callbackd
 			in_byte_size = MAX_NAME_SIZE*2;
 			out_byte_size = MAX_NAME_SIZE;
 			char *filename = char_buffer;
-			vfat_set_stat(short_entry,filename,callback,callbackdata,
+			setStat(short_entry,filename,callback,callbackdata,
 			(((uint32_t)short_entry.cluster_hi) << 16) | ((uint32_t)short_entry.cluster_lo));
 			check_sum = '\0';
 			memset(buffer, 0, MAX_NAME_SIZE);
 		} else {
 			char *filename = char_buffer;
-			vfat_get_filename(short_entry.nameext, filename);
-			vfat_set_stat(short_entry,filename,callback,callbackdata,
+			getfilename(short_entry.nameext, filename);
+			setStat(short_entry,filename,callback,callbackdata,
 			(((uint32_t)short_entry.cluster_hi) << 16) | ((uint32_t)short_entry.cluster_lo));
 		}
 	}
@@ -330,7 +330,7 @@ conv_time(uint16_t date_entry, uint16_t time_entry) {
 
 
 void
-vfat_set_stat(struct fat32_direntry dir_entry, char* buffer, fuse_fill_dir_t callback, void *callbackdata, uint32_t cluster_no){
+setStat(struct fat32_direntry dir_entry, char* buffer, fuse_fill_dir_t callback, void *callbackdata, uint32_t cluster_no){
 	struct stat* stat_str = malloc(sizeof(struct stat));
 	memset(stat_str, 0, sizeof(struct stat));
 	stat_str->st_dev = 0; // Ignored by FUSE
@@ -373,7 +373,7 @@ vfat_set_stat(struct fat32_direntry dir_entry, char* buffer, fuse_fill_dir_t cal
 }
 
 char*
-vfat_get_filename(char* nameext, char* filename) {
+getfilename(char* nameext, char* filename) {
 	if(nameext[0] == 0x20) {
 		err(1, "[Error] the name cannot strat with a space.");
 	}
@@ -456,7 +456,7 @@ vfat_readdir(uint32_t cluster_no, fuse_fill_dir_t callback, void *callbackdata)
 	st.st_nlink = 1;
 	bool first_cluster = true;
 	while(!eof) {
-		end_of_read = vfat_read_cluster(next_cluster_no, callback, callbackdata,first_cluster);
+		end_of_read = read_cluster(next_cluster_no, callback, callbackdata,first_cluster);
 		first_cluster = false;
 
 		if(end_of_read == END_OF_DIRECTORY) {
@@ -682,7 +682,7 @@ struct fuse_file_info *unused)
 		offs -= cluster_size;
 	}
 
-	vfat_seek_cluster(cluster_no);
+	seek_cluster(cluster_no);
 	if(lseek(vfat_info.fd, offs, SEEK_CUR) == -1) {
 		err(1, "seek last part of offset failed\n");
 	}
@@ -701,7 +701,7 @@ struct fuse_file_info *unused)
 
 	while(size - cnt > cluster_size) {
 		cluster_no = vfat_next_cluster(cluster_no);
-		vfat_seek_cluster(cluster_no);
+		seek_cluster(cluster_no);
 		DEBUG_PRINT("Read cluster_no %x\n", cluster_no);
 		if((cluster_no & 0x0fffffff) >= 0x0FFFFFF8) {
 			memset(buf+cnt, 0, size-cnt);
@@ -714,7 +714,7 @@ struct fuse_file_info *unused)
 	}
 
 	cluster_no = vfat_next_cluster(cluster_no);
-	vfat_seek_cluster(cluster_no);
+	seek_cluster(cluster_no);
 	if((cluster_no & 0x0fffffff) >= 0x0FFFFFF8) {
 		memset(buf+cnt, 0, size-cnt);
 		return cnt;
