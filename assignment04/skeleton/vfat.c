@@ -181,7 +181,7 @@ vfat_init(const char *dev)
 
 	DEBUG_PRINT("Volume seems really FAT32.\n");
 	
-	vfat_info.root_inode.st_ino = le32toh(s.root_cluster);
+	vfat_info.root_inode.st_ino = le32toh(vfat_info.fat_boot.root_cluster);
     vfat_info.root_inode.st_mode = 0555 | S_IFDIR;
     vfat_info.root_inode.st_nlink = 1;
     vfat_info.root_inode.st_uid = vfat_info.mount_uid;
