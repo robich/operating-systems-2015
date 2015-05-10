@@ -90,11 +90,26 @@ struct fat32_direntry_long {
 
 // A kitchen sink for all important data about filesystem
 struct vfat_data {
-	const char	*dev;
-	int		fs;
-	struct fat_boot_header  fat_boot;
-	/* XXX add your code here */
-	uint32_t root_cluster;
+    const char* dev;
+    int         fs;
+    uid_t mount_uid;
+    gid_t mount_gid;
+    time_t mount_time;
+    /* TODO: add your code here */
+    uint32_t root_cluster;
+    struct fat_boot_header  fat_boot;
+    size_t      fat_entries;
+    off_t       cluster_begin_offset;
+    size_t      direntry_per_cluster;
+    size_t      bytes_per_sector;
+    size_t      sectors_per_cluster;
+    size_t      reserved_sectors;
+    size_t      sectors_per_fat;
+    size_t      cluster_size;
+    off_t       fat_begin_offset;
+    size_t      fat_size;
+    struct stat root_inode;
+    uint32_t*   fat; // use util::mmap_file() to map this directly into the memory 
 };
 
 struct vfat_data vfat_info;
