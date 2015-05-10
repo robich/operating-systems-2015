@@ -180,9 +180,14 @@ vfat_init(const char *dev)
 	// and other fields of fat_boot_fat32 so we don't check them
 
 	DEBUG_PRINT("Volume seems really FAT32.\n");
-	if(lseek(vfat_info.fd, 0, SEEK_SET) == -1) {
-		err(1, "lseek(0)");
-	}
+	
+	vfat_info.root_inode.st_ino = le32toh(s.root_cluster);
+    vfat_info.root_inode.st_mode = 0555 | S_IFDIR;
+    vfat_info.root_inode.st_nlink = 1;
+    vfat_info.root_inode.st_uid = vfat_info.mount_uid;
+    vfat_info.root_inode.st_gid = vfat_info.mount_gid;
+    vfat_info.root_inode.st_size = 0;
+    vfat_info.root_inode.st_atime = vfat_info.root_inode.st_mtime = vfat_info.root_inode.st_ctime = vfat_info.mount_time;
 }
 
 unsigned char
