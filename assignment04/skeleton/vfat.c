@@ -18,6 +18,7 @@
 #include <signal.h>
 
 #include "vfat.h"
+#include "debugfs.h"
 
 #define DEBUG_PRINT printf
 #define END_OF_DIRECTORY 0
