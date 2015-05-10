@@ -341,7 +341,7 @@ setStat(struct fat32_direntry dir_entry, char* buffer, fuse_fill_dir_t filler, v
 			else{
 				stat_str->st_mode = S_IRWXU | S_IRWXG | S_IRWXO;
 			}
-			if((dir_entry.attr & ATTR_DIRECTORY) == ATTR_DIRECTORY) {
+			if((dir_entry.attr & VFAT_ATTR_DIR) == VFAT_ATTR_DIR) {
 				stat_str->st_mode |= S_IFDIR;
 				int cnt = 0;
 				uint32_t next_cluster_no = cluster_no;
