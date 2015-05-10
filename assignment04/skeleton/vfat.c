@@ -29,21 +29,21 @@ iconv_t iconv_utf16;
 
 void seek_cluster(uint32_t cluster_no) {
     if(cluster_no < 2) {
-	err(1, "cluster number < 2");
+	err(1, "[Error] cluster number < 2\n");
     }
 
     uint32_t firstDataSector = vfat_info.fat_boot.reserved_sectors +
 	(vfat_info.fat_boot.fat_count * vfat_info.fat_boot.sectors_per_fat);
     uint32_t firstSectorofCluster = ((cluster_no - 2) * vfat_info.fat_boot.sectors_per_cluster) + firstDataSector;
     if(lseek(vfat_info.fd, firstSectorofCluster * vfat_info.fat_boot.bytes_per_sector, SEEK_SET) == -1) {
-	err(1, "lseek cluster_no %d\n", cluster_no);
+	err(1, "[Error] lseek cluster_no %d\n", cluster_no);
     }
 }
 
 static void
 vfat_init(const char *dev)
 {
-	DEBUG_PRINT("vfat_init(1): start of function\n");
+	DEBUG_PRINT("[Info] vfat_init(1): start of function\n");
 	
 	struct fat_boot_header s;
 	
@@ -60,9 +60,9 @@ vfat_init(const char *dev)
 
     vfat_info.fd = open(dev, O_RDONLY);
     if (vfat_info.fd < 0)
-        err(1, "open(%s)", dev);
+        err(1, "[Error] open(%s)", dev);
     if (pread(vfat_info.fd, &s, sizeof(s), 0) != sizeof(s))
-        err(1, "read super block");
+        err(1, "[Error] read super block");
 
 	// Throw error if not FAT32 volume
     // See: http://www.win.tue.nl/~aeb/linux/fs/fat/fat-1.html for the deatils of FAT12, FAT16 and FAT32.
@@ -92,11 +92,11 @@ vfat_init(const char *dev)
 	countofClusters = dataSec / s.sectors_per_cluster;
     
 	if(countofClusters < 4085) {
-		err(1,"[Error] Volume is FAT12.\n");
+		err(1,"[Error] Volume looks like FAT12. Expected FAT32.\n");
 	} else if(countofClusters < 65525) {
-		err(1,"[Error] Volume is FAT16.\n");
+		err(1,"[Error] Volume looks like FAT16. Expected FAT32.\n");
 	} else {
-		DEBUG_PRINT("Volume looks like FAT32: it has %d clusters\n", countofClusters);
+		DEBUG_PRINT("[Info] Volume looks like FAT32: it has %d clusters\n", countofClusters);
 	}
 
 	// Check all other fields
@@ -165,7 +165,7 @@ vfat_init(const char *dev)
 	
 	vfat_info.root_cluster = 0xFFFFFFF & s.root_cluster;
 
-	DEBUG_PRINT("Volume is FAT32 for sure.\n");
+	DEBUG_PRINT("[Info] Volume is FAT32 for sure.\n");
 	
 	vfat_info.root_inode.st_ino = le32toh(s.root_cluster);
     vfat_info.root_inode.st_mode = 0555 | S_IFDIR;
@@ -179,7 +179,7 @@ vfat_init(const char *dev)
     // TODO: do not forget to unmap :)
     vfat_info.fat_boot = s; // easier
     
-    DEBUG_PRINT("vfat_init(1): end of function\n");
+    DEBUG_PRINT("[Info] vfat_init(1): end of function\n");
 }
 
 unsigned char
@@ -211,7 +211,7 @@ read_cluster(uint32_t cluster_no, fuse_fill_dir_t filler, void *fillerdata,bool 
 
 	for(i = 0; i < vfat_info.fat_boot.sectors_per_cluster*vfat_info.fat_boot.bytes_per_sector; i+=32) {
 		if(read(vfat_info.fd, &short_entry, 32) != 32){
-			err(1, "read(short_dir)");
+			err(1, "[Error] read short_entry");
 		}
 
 		if(i < 64 && first_cluster && cluster_no != 2){
@@ -281,7 +281,7 @@ read_cluster(uint32_t cluster_no, fuse_fill_dir_t filler, void *fillerdata,bool 
 				seq_nb = 0;
 				check_sum = '\0';
 				memset(buffer, 0, MAX_NAME_SIZE*2);
-				err(1, "error: Bad sequence number or checksum\n");
+				err(1, "[Error] Bad sequence number or checksum\n");
 			}
 		} else if((short_entry.attr & ATTR_VOLUME_ID) == ATTR_VOLUME_ID) {
 			seq_nb = 0;
@@ -350,7 +350,7 @@ setStat(struct fat32_direntry dir_entry, char* buffer, fuse_fill_dir_t filler, v
 					next_cluster_no = vfat_next_cluster(0x0FFFFFFF & next_cluster_no);
 				}
 				if(lseek(vfat_info.fd, pos, SEEK_SET) == -1) {
-					err(1, "Couldn't return to initial position: %lx", pos);
+					err(1, "[Error] Couldn't return to pos");
 				}
 				stat_str->st_size = cnt * vfat_info.fat_boot.sectors_per_cluster*vfat_info.fat_boot.bytes_per_sector;
 			}
@@ -374,7 +374,7 @@ setStat(struct fat32_direntry dir_entry, char* buffer, fuse_fill_dir_t filler, v
 char*
 getfilename(char* nameext, char* filename) {
 	if(nameext[0] == 0x20) {
-	    err(1, "filename[0] is 0x20");
+	    err(1, "[Error] the name cannot strat with a space.");
 	}
 
 	uint32_t fileNameCnt = 0;
@@ -402,7 +402,7 @@ getfilename(char* nameext, char* filename) {
 			nameext[i] == 0x5D ||
 			nameext[i] == 0x7C) {
 
-			err(1, "invalid character in filename %x at %d\n", nameext[i] & 0xFF, i);
+			err(1, "[Error] Illegal character in filename");
 		}
 
 		if(before_extension) {
@@ -435,7 +435,7 @@ getfilename(char* nameext, char* filename) {
 	}
 
 	if(filename[fileNameCnt - 1] == '.') {
-	    filename--;
+	    filename--; // -
 	}
 	filename[fileNameCnt] = '\0';
 	return filename;
@@ -500,25 +500,25 @@ int vfat_next_cluster(uint32_t c) {
 
 // Used by vfat_search_entry()
 struct vfat_search_data {
-	const char	*name;
-	int		found;
-	struct stat	*st;
+    const char*  name;
+    int          found;
+    struct stat* st;
 };
 
 
-// You can use this in vfat_resolve as a filler function for vfat_readdir
-static int
-vfat_search_entry(void *data, const char *name, const struct stat *st, off_t offs)
+
+// You can use this in vfat_resolve as a callback function for vfat_readdir
+// This way you can get the struct stat of the subdirectory/file.
+int vfat_search_entry(void *data, const char *name, const struct stat *st, off_t offs)
 {
-	struct vfat_search_data *sd = data;
+    struct vfat_search_data *sd = data;
 
-	if (strcmp(sd->name, name) != 0)
-		return (0);
+    if (strcmp(sd->name, name) != 0) return 0;
 
-	sd->found = 1;
-	*sd->st = *st;
+    sd->found = 1;
+    *sd->st = *st;
 
-	return (1);
+    return 1;
 }
 
 // Recursively find correct file/directory node given the path
