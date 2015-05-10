@@ -46,10 +46,10 @@ void seek_cluster(uint32_t cluster_no) {
 	err(1, "cluster number < 2");
     }
 
-    uint32_t firstDataSector = vfat_info.fat_boot.reserved_sectors +
-	(vfat_info.fat_boot.fat_count * vfat_info.fat_boot.fat32.sectors_per_fat);
-    uint32_t firstSectorofCluster = ((cluster_no - 2) * vfat_info.fat_boot.sectors_per_cluster) + firstDataSector;
-    if(lseek(vfat_info.fs, firstSectorofCluster * vfat_info.fat_boot.bytes_per_sector, SEEK_SET) == -1) {
+    uint32_t firstDataSector = s.reserved_sectors +
+	(s.fat_count * s.fat32.sectors_per_fat);
+    uint32_t firstSectorofCluster = ((cluster_no - 2) * s.sectors_per_cluster) + firstDataSector;
+    if(lseek(vfat_info.fs, firstSectorofCluster * s.bytes_per_sector, SEEK_SET) == -1) {
 	err(1, "lseek cluster_no %d\n", cluster_no);
     }
 }
@@ -57,9 +57,13 @@ void seek_cluster(uint32_t cluster_no) {
 static void
 vfat_init(const char *dev)
 {
+	
+	DEBUG_PRINT("vfat_init(1): start of function\n");
+    
+    	struct fat_boot_header s;
+    
 	uint16_t rootDirSectors;
 	uint32_t fatSz, totSec, dataSec, countofClusters, first_fat;
-	uint8_t fat_0;
 	iconv_utf16 = iconv_open("utf-8", "utf-16le"); // from utf-16 to utf-8
 	// These are useful so that we can setup correct permissions in the mounted directories
 	mount_uid = getuid();
@@ -75,32 +79,32 @@ vfat_init(const char *dev)
 		err(1, "open(%s)", dev);
 	}
 
-	if(read(vfat_info.fs,&vfat_info.fat_boot, 512) != 512) {
+	if(read(vfat_info.fs,&s, 512) != 512) {
 		err(1,"read(%s)",dev);
 	}
 
 	// Fat Type Determination:
-	if(vfat_info.fat_boot.root_max_entries != 0) {
+	if(s.root_max_entries != 0) {
 		err(1,"error: should be 0\n");
 	}
-	rootDirSectors = ((vfat_info.fat_boot.root_max_entries * 32) +
-		(vfat_info.fat_boot.bytes_per_sector - 1)) / vfat_info.fat_boot.bytes_per_sector;
+	rootDirSectors = ((s.root_max_entries * 32) +
+		(s.bytes_per_sector - 1)) / s.bytes_per_sector;
 
-	if(vfat_info.fat_boot.sectors_per_fat_small != 0){
-		fatSz = vfat_info.fat_boot.sectors_per_fat_small;
+	if(s.sectors_per_fat_small != 0){
+		fatSz = s.sectors_per_fat_small;
 	} else{
-		fatSz = vfat_info.fat_boot.fat32.sectors_per_fat;
+		fatSz = s.fat32.sectors_per_fat;
 	}
 
-	if(vfat_info.fat_boot.total_sectors_small != 0){
-		totSec = vfat_info.fat_boot.total_sectors_small;
+	if(s.total_sectors_small != 0){
+		totSec = s.total_sectors_small;
 	} else {
-		totSec = vfat_info.fat_boot.total_sectors;
+		totSec = s.total_sectors;
 	}
 
-	dataSec = totSec - (vfat_info.fat_boot.reserved_sectors +
-	(vfat_info.fat_boot.fat_count * fatSz) + rootDirSectors);
-	countofClusters = dataSec / vfat_info.fat_boot.sectors_per_cluster;
+	dataSec = totSec - (s.reserved_sectors +
+	(s.fat_count * fatSz) + rootDirSectors);
+	countofClusters = dataSec / s.sectors_per_cluster;
 
 	if(countofClusters < 4085) {
 		err(1,"error: Volume is FAT12.\n");
@@ -111,59 +115,59 @@ vfat_init(const char *dev)
 	}
 
 	// Check all other fields
-	if(((char*)&vfat_info.fat_boot)[510] != 0x55 &&
-		((char*)&vfat_info.fat_boot)[511] != (char) 0xAA) {
+	if(((char*)&s)[510] != 0x55 &&
+		((char*)&s)[511] != (char) 0xAA) {
 		err(1, "Magic number 0xAA55 not present\n");
 	}
 
-	if(vfat_info.fat_boot.jmp_boot[0] == 0xEB) {
-		if(vfat_info.fat_boot.jmp_boot[2] != 0x90) {
+	if(s.jmp_boot[0] == 0xEB) {
+		if(s.jmp_boot[2] != 0x90) {
 			err(1, "jmp_boot[2] is wrong\n");
 		}
-	} else if(vfat_info.fat_boot.jmp_boot[0] != 0xE9){
+	} else if(s.jmp_boot[0] != 0xE9){
 		err(1, "jmp_boot[0] is wrong\n");
 	}
 
-	if(vfat_info.fat_boot.bytes_per_sector != 512 &&
-		vfat_info.fat_boot.bytes_per_sector != 1024 &&
-		vfat_info.fat_boot.bytes_per_sector != 2048 &&
-		vfat_info.fat_boot.bytes_per_sector != 5096) {
+	if(s.bytes_per_sector != 512 &&
+		s.bytes_per_sector != 1024 &&
+		s.bytes_per_sector != 2048 &&
+		s.bytes_per_sector != 5096) {
 
 		err(1, "bytes_per_sector is wrong\n");
 	}
 
-	if(vfat_info.fat_boot.sectors_per_cluster != 1 &&
-		vfat_info.fat_boot.sectors_per_cluster % 2 != 0) {
+	if(s.sectors_per_cluster != 1 &&
+		s.sectors_per_cluster % 2 != 0) {
 		err(1, "sectors_per_cluster is wrong\n");
 	}
 
-	if(vfat_info.fat_boot.sectors_per_cluster *
-		vfat_info.fat_boot.bytes_per_sector > 32 * 1024) {
+	if(s.sectors_per_cluster *
+		s.bytes_per_sector > 32 * 1024) {
 		err(1, "bytes_per_sector * sectors_per_cluster is too large\n");
 	}
 
-	if(vfat_info.fat_boot.reserved_sectors == 0) {
+	if(s.reserved_sectors == 0) {
 		err(1, "reserved_sectors is zero\n");
 	}
 
-	if(vfat_info.fat_boot.fat_count < 2) {
+	if(s.fat_count < 2) {
 		err(1, "fat count is less than two\n");
 	}
 
-	if(vfat_info.fat_boot.root_max_entries != 0) {
+	if(s.root_max_entries != 0) {
 		err(1, "root_max_entries must be zero\n");
 	}
 
-	if(vfat_info.fat_boot.total_sectors_small != 0) {
+	if(s.total_sectors_small != 0) {
 		err(1, "total_sectors_small must be zero\n");
 	}
 
-	if(vfat_info.fat_boot.media_info != 0xF0 &&
-		vfat_info.fat_boot.media_info < 0xF8) {
+	if(s.media_info != 0xF0 &&
+		s.media_info < 0xF8) {
 		err(1, "Wrong media info\n");
 	}
 	
-	first_fat = vfat_info.fat_boot.reserved_sectors * vfat_info.fat_boot.bytes_per_sector;
+	first_fat = s.reserved_sectors * s.bytes_per_sector;
 	if(lseek(vfat_info.fs, first_fat, SEEK_SET) == -1) {
 		err(1, "lseek(%u)", first_fat);
 	}
@@ -172,19 +176,19 @@ vfat_init(const char *dev)
 		err(1, "read(%lu)", sizeof(uint8_t));
 	}
 	
-	if(fat_0 != vfat_info.fat_boot.media_info) {
+	if(fat_0 != s.media_info) {
 		err(1, "Media info is different in FAT[0]\n");
 	}
 
-	if(vfat_info.fat_boot.sectors_per_fat_small != 0) {
+	if(s.sectors_per_fat_small != 0) {
 		err(1, "sectors per fat small must be zero\n");
 	}
 
-	if(vfat_info.fat_boot.total_sectors == 0) {
+	if(s.total_sectors == 0) {
 		err(1, "total_sectors must be non-zero\n");
 	}
 	
-	vfat_info.root_cluster = 0xFFFFFFF & vfat_info.fat_boot.fat32.root_cluster;
+	vfat_info.root_cluster = 0xFFFFFFF & s.fat32.root_cluster;
 
 	// Microsoft specs do not say anything to be forced about sectors_per_fat
 	// and other fields of fat_boot_fat32 so we don't check them
@@ -651,7 +655,7 @@ vfat_fuse_read(const char *path, char *buf, size_t size, off_t offs,
 	}
 
 	size_t cnt = 0;
-	size_t cluster_size = vfat_info.fat_boot.sectors_per_cluster*vfat_info.fat_boot.bytes_per_sector;
+	size_t cluster_size = vfat_info.fat_boot.sectors_per_cluster*s.bytes_per_sector;
 	uint32_t cluster_no = (uint32_t) st.st_ino;
 
 	if(offs >= st.st_size) {
