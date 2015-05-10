@@ -24,16 +24,6 @@
 #define DIRECTORY_NOT_FINISHED 1
 #define MAX_NAME_SIZE (13 * 0x14)
 
-// A kitchen sink for all important data about filesystem
-struct vfat_data {
-	const char	*dev;
-	int		fs;
-	struct fat_boot_header  fat_boot;
-	/* XXX add your code here */
-	uint32_t root_cluster;
-};
-
-struct vfat_data vfat_info;
 iconv_t iconv_utf16;
 
 static uid_t mount_uid;
