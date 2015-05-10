@@ -196,14 +196,16 @@ chkSum (unsigned char *pFcbName) {
 
 
 static int
-read_cluster(uint32_t cluster_no, fuse_fill_dir_t filler, void *fillerdata,bool first_cluster) {
+read_cluster(uint32_t cluster_no, fuse_fill_dir_t callback, void *callbackdata, bool first_cluster) {
 	uint8_t check_sum = '\0';
-	char* buffer = calloc(MAX_NAME_SIZE*2, sizeof(char)); // Max size of name: 13 * 0x14 = 260
+	char* buffer = calloc(MAX_NAME_SIZE * 2, sizeof(char));
 	char* char_buffer = calloc(MAX_NAME_SIZE, sizeof(char));
 	int i, j, seq_nb = 0;
 	size_t in_byte_size = 2 * MAX_NAME_SIZE, out_byte_size = MAX_NAME_SIZE;
 	struct fat32_direntry short_entry;
 	struct fat32_direntry_long long_entry;
+	
+	// fill block of memory
 	memset(buffer, 0, 2*MAX_NAME_SIZE);
 	
 	seek_cluster(cluster_no);
@@ -215,8 +217,8 @@ read_cluster(uint32_t cluster_no, fuse_fill_dir_t filler, void *fillerdata,bool 
 		
 		if(i < 64 && first_cluster && cluster_no != 2){
 			char* filename = (i == 0) ? "." : "..";
-			setStat(short_entry,filename,filler,fillerdata,
-			(((uint32_t)short_entry.cluster_hi) << 16) | ((uint32_t)short_entry.cluster_lo));
+			setStat(short_entry, filename, callback, callbackdata,
+			(((uint32_t) short_entry.cluster_hi) << 16) | ((uint32_t) short_entry.cluster_lo));
 			
 			continue;
 		}
@@ -293,14 +295,14 @@ read_cluster(uint32_t cluster_no, fuse_fill_dir_t filler, void *fillerdata,bool 
 			in_byte_size = MAX_NAME_SIZE*2;
 			out_byte_size = MAX_NAME_SIZE;
 			char *filename = char_buffer;
-			setStat(short_entry,filename,filler,fillerdata,
+			setStat(short_entry, filename, callback, callbackdata,
 			(((uint32_t)short_entry.cluster_hi) << 16) | ((uint32_t)short_entry.cluster_lo));
 			check_sum = '\0';
 			memset(buffer, 0, MAX_NAME_SIZE);
 		} else {
 			char *filename = char_buffer;
 			getfilename(short_entry.nameext, filename);
-			setStat(short_entry,filename,filler,fillerdata,
+			setStat(short_entry, filename, callback, callbackdata,
 			(((uint32_t)short_entry.cluster_hi) << 16) | ((uint32_t)short_entry.cluster_lo));
 		}
 	}
@@ -328,7 +330,7 @@ conv_time(uint16_t date_entry, uint16_t time_entry) {
 
 
 void
-setStat(struct fat32_direntry dir_entry, char* buffer, fuse_fill_dir_t filler, void *fillerdata, uint32_t cluster_no){
+setStat(struct fat32_direntry dir_entry, char* buffer, fuse_fill_dir_t callback, void *callbackdata, uint32_t cluster_no){
 	struct stat* stat_str = malloc(sizeof(struct stat));
 	memset(stat_str, 0, sizeof(struct stat));
 	stat_str->st_dev = 0; // Ignored by FUSE
@@ -366,7 +368,7 @@ setStat(struct fat32_direntry dir_entry, char* buffer, fuse_fill_dir_t filler, v
 	stat_str->st_atime = conv_time(dir_entry.atime_date, 0);
 	stat_str->st_mtime = conv_time(dir_entry.mtime_date, dir_entry.mtime_time);
 	stat_str->st_ctime = conv_time(dir_entry.ctime_date, dir_entry.ctime_time);
-	filler(fillerdata, buffer, stat_str, 0);
+	callback(callbackdata, buffer, stat_str, 0);
 	free(stat_str);
 }
 
@@ -440,11 +442,10 @@ getfilename(char* nameext, char* filename) {
 	return filename;
 }
 
-static int
-vfat_readdir(uint32_t cluster_no, fuse_fill_dir_t filler, void *fillerdata)
+int vfat_readdir(uint32_t first_cluster, fuse_fill_dir_t callback, void *callbackdata)
 {
 	struct stat st; // we can reuse same stat entry over and over again
-	uint32_t next_cluster_no = cluster_no;
+	uint32_t next_cluster_no = first_cluster;
 	bool eof = false;
 	int end_of_read;
 	
@@ -452,9 +453,9 @@ vfat_readdir(uint32_t cluster_no, fuse_fill_dir_t filler, void *fillerdata)
 	st.st_uid = vfat_info.mount_uid;
 	st.st_gid = vfat_info.mount_gid;
 	st.st_nlink = 1;
-	bool first_cluster = true;
+	bool first_cluster_bool = true;
 	while(!eof) {
-		end_of_read = read_cluster(next_cluster_no, filler, fillerdata,first_cluster);
+		end_of_read = read_cluster(next_cluster_no, callback, callbackdata, first_cluster_bool);
 		first_cluster = false;
 		
 		if(end_of_read == END_OF_DIRECTORY) {
