@@ -73,10 +73,10 @@ vfat_init(const char *dev)
     // Use mount time as mtime and ctime for the filesystem root entry (e.g. "/")
     vfat_info.mount_time = time(NULL);
 
-    vfat_info.fd = open(dev, O_RDONLY);
-    if (vfat_info.fd < 0)
+    vfat_info.fs = open(dev, O_RDONLY);
+    if (vfat_info.fs < 0)
         err(1, "open(%s)", dev);
-    if (pread(vfat_info.fd, &s, sizeof(s), 0) != sizeof(s))
+    if (pread(vfat_info.fs, &s, sizeof(s), 0) != sizeof(s))
         err(1, "read super block");
         
     // Throw error if not FAT32 volume
@@ -192,7 +192,7 @@ vfat_init(const char *dev)
     vfat_info.root_inode.st_size = 0;
     vfat_info.root_inode.st_atime = vfat_info.root_inode.st_mtime = vfat_info.root_inode.st_ctime = vfat_info.mount_time;
     
-    vfat_info.fat = mmap_file(vfat_info.fd, s.reserved_sectors * s.bytes_per_sector, s.sectors_per_fat * s.bytes_per_sector);
+    //vfat_info.fat = mmap_file(vfat_info.fs, s.reserved_sectors * s.bytes_per_sector, s.sectors_per_fat * s.bytes_per_sector);
     // TODO: do not forget to unmap :)
     
     DEBUG_PRINT("vfat_init(1): end of function\n");
