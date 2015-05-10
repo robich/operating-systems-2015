@@ -88,6 +88,16 @@ struct fat32_direntry_long {
 #define VFAT_LFN_SEQ_DELETED	0x80
 #define VFAT_LFN_SEQ_MASK	0x3f
 
+// A kitchen sink for all important data about filesystem
+struct vfat_data {
+	const char	*dev;
+	int		fs;
+	struct fat_boot_header  fat_boot;
+	/* XXX add your code here */
+	uint32_t root_cluster;
+};
+
+struct vfat_data vfat_info;
 
 /// FOR debugfs
 /*int vfat_next_cluster(unsigned int c);
