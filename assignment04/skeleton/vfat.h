@@ -91,7 +91,7 @@ struct fat32_direntry_long {
 // A kitchen sink for all important data about filesystem
 struct vfat_data {
     const char* dev;
-    int         fs;
+    int         fd;
     uid_t mount_uid;
     gid_t mount_gid;
     time_t mount_time;
