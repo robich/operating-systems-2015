@@ -39,7 +39,7 @@ void seek_cluster(uint32_t cluster_no) {
     uint32_t firstDataSector = vfat_info.fat_boot.reserved_sectors +
 	(vfat_info.fat_boot.fat_count * vfat_info.fat_boot.sectors_per_fat);
     uint32_t firstSectorofCluster = ((cluster_no - 2) * vfat_info.fat_boot.sectors_per_cluster) + firstDataSector;
-    if(lseek(vfat_info.fs, firstSectorofCluster * vfat_info.fat_boot.bytes_per_sector, SEEK_SET) == -1) {
+    if(lseek(vfat_info.fd, firstSectorofCluster * vfat_info.fat_boot.bytes_per_sector, SEEK_SET) == -1) {
 	err(1, "lseek cluster_no %d\n", cluster_no);
     }
 }
@@ -59,13 +59,13 @@ vfat_init(const char *dev)
 	mount_time = time(NULL);
 
 	// Open the FAT file
-	vfat_info.fs = open(dev, O_RDONLY);
+	vfat_info.fd = open(dev, O_RDONLY);
 
-	if (vfat_info.fs < 0) {
+	if (vfat_info.fd < 0) {
 		err(1, "open(%s)", dev);
 	}
 
-	if(read(vfat_info.fs,&vfat_info.fat_boot, 512) != 512) {
+	if(read(vfat_info.fd,&vfat_info.fat_boot, 512) != 512) {
 		err(1,"read(%s)",dev);
 	}
 
@@ -154,11 +154,11 @@ vfat_init(const char *dev)
 	}
 	
 	first_fat = vfat_info.fat_boot.reserved_sectors * vfat_info.fat_boot.bytes_per_sector;
-	if(lseek(vfat_info.fs, first_fat, SEEK_SET) == -1) {
+	if(lseek(vfat_info.fd, first_fat, SEEK_SET) == -1) {
 		err(1, "lseek(%u)", first_fat);
 	}
 
-	if(read(vfat_info.fs, &fat_0, sizeof(uint8_t)) != sizeof(uint8_t)) {
+	if(read(vfat_info.fd, &fat_0, sizeof(uint8_t)) != sizeof(uint8_t)) {
 		err(1, "read(%lu)", sizeof(uint8_t));
 	}
 	
@@ -180,7 +180,7 @@ vfat_init(const char *dev)
 	// and other fields of fat_boot_fat32 so we don't check them
 
 	DEBUG_PRINT("Volume seems really FAT32.\n");
-	if(lseek(vfat_info.fs, 0, SEEK_SET) == -1) {
+	if(lseek(vfat_info.fd, 0, SEEK_SET) == -1) {
 		err(1, "lseek(0)");
 	}
 }
@@ -213,7 +213,7 @@ read_cluster(uint32_t cluster_no, fuse_fill_dir_t filler, void *fillerdata,bool 
 	seek_cluster(cluster_no);
 
 	for(i = 0; i < vfat_info.fat_boot.sectors_per_cluster*vfat_info.fat_boot.bytes_per_sector; i+=32) {
-		if(read(vfat_info.fs, &short_entry, 32) != 32){
+		if(read(vfat_info.fd, &short_entry, 32) != 32){
 			err(1, "read(short_dir)");
 		}
 
@@ -347,12 +347,12 @@ setStat(struct fat32_direntry dir_entry, char* buffer, fuse_fill_dir_t filler, v
 				stat_str->st_mode |= S_IFDIR;
 				int cnt = 0;
 				uint32_t next_cluster_no = cluster_no;
-				off_t pos = lseek(vfat_info.fs, 0, SEEK_CUR);
+				off_t pos = lseek(vfat_info.fd, 0, SEEK_CUR);
 				while(next_cluster_no < (uint32_t) 0x0FFFFFF8) {
 					cnt++;
 					next_cluster_no = next_cluster(0x0FFFFFFF & next_cluster_no);
 				}
-				if(lseek(vfat_info.fs, pos, SEEK_SET) == -1) {
+				if(lseek(vfat_info.fd, pos, SEEK_SET) == -1) {
 					err(1, "Couldn't return to initial position: %lx", pos);
 				}
 				stat_str->st_size = cnt * vfat_info.fat_boot.sectors_per_cluster*vfat_info.fat_boot.bytes_per_sector;
@@ -479,19 +479,19 @@ next_cluster(uint32_t cluster_no) {
 	uint32_t next_cluster, next_cluster_check;
 	uint32_t first_fat = vfat_info.fat_boot.reserved_sectors * vfat_info.fat_boot.bytes_per_sector;
 
-	if(lseek(vfat_info.fs, first_fat + cluster_no * sizeof(uint32_t), SEEK_SET) == -1) {
+	if(lseek(vfat_info.fd, first_fat + cluster_no * sizeof(uint32_t), SEEK_SET) == -1) {
 		err(1, "lseek(%lu)", first_fat + cluster_no * sizeof(uint32_t));
 	}
 
-	if(read(vfat_info.fs, &next_cluster, sizeof(uint32_t)) != sizeof(uint32_t)) {
+	if(read(vfat_info.fd, &next_cluster, sizeof(uint32_t)) != sizeof(uint32_t)) {
 		err(1, "read(%lu)",sizeof(uint32_t));
 	}
 
-	if(lseek(vfat_info.fs, first_fat + vfat_info.fat_boot.sectors_per_fat * vfat_info.fat_boot.bytes_per_sector + cluster_no * sizeof(uint32_t) , SEEK_SET) == -1) {
+	if(lseek(vfat_info.fd, first_fat + vfat_info.fat_boot.sectors_per_fat * vfat_info.fat_boot.bytes_per_sector + cluster_no * sizeof(uint32_t) , SEEK_SET) == -1) {
 		err(1, "lseek(%d)", first_fat);
 	}
 
-	if(read(vfat_info.fs, &next_cluster_check, sizeof(uint32_t)) != sizeof(uint32_t)) {
+	if(read(vfat_info.fd, &next_cluster_check, sizeof(uint32_t)) != sizeof(uint32_t)) {
 		err(1, "read(%lu)", sizeof(uint32_t));
 	}
 
@@ -588,12 +588,12 @@ vfat_fuse_getattr(const char *path, struct stat *st)
 		st->st_rdev = 0;
 		int cnt = 0;
 		uint32_t next_cluster_no = vfat_info.root_cluster;
-		off_t pos = lseek(vfat_info.fs, 0, SEEK_CUR);
+		off_t pos = lseek(vfat_info.fd, 0, SEEK_CUR);
 		while(next_cluster_no < (uint32_t) 0x0FFFFFF8) {
 			cnt++;
 			next_cluster_no = next_cluster(0x0FFFFFFF & next_cluster_no);
 		}
-		if(lseek(vfat_info.fs, pos, SEEK_SET) == -1) {
+		if(lseek(vfat_info.fd, pos, SEEK_SET) == -1) {
 			err(1, "Couldn't return to initial position: %lx", pos);
 		}
 		st->st_size = cnt * vfat_info.fat_boot.sectors_per_cluster*vfat_info.fat_boot.bytes_per_sector;
@@ -655,17 +655,17 @@ vfat_fuse_read(const char *path, char *buf, size_t size, off_t offs,
 	}
 
 	seek_cluster(cluster_no);
-	if(lseek(vfat_info.fs, offs, SEEK_CUR) == -1) {
+	if(lseek(vfat_info.fd, offs, SEEK_CUR) == -1) {
 	    err(1, "seek last part of offset failed\n");
 	}
 
 	if(cluster_size - offs > size) {
-		if(read(vfat_info.fs, buf+cnt, size) != size) {
+		if(read(vfat_info.fd, buf+cnt, size) != size) {
 			err(1, "read cluster-offs > size failed\n");
 		}
 		return 0; // TODO CHECK THIS
 	} else {
-		if(read(vfat_info.fs, buf+cnt, cluster_size - offs) != cluster_size-offs) {
+		if(read(vfat_info.fd, buf+cnt, cluster_size - offs) != cluster_size-offs) {
 			err(1, "read cluster-offs <= size failed\n");
 		}
 		cnt += cluster_size - offs;
@@ -679,7 +679,7 @@ vfat_fuse_read(const char *path, char *buf, size_t size, off_t offs,
 		    memset(buf+cnt, 0, size-cnt);
 		    return cnt;
 		}
-		if(read(vfat_info.fs, buf+cnt, cluster_size) != cluster_size) {
+		if(read(vfat_info.fd, buf+cnt, cluster_size) != cluster_size) {
 			err(1, "read cluster_size failed\n");
 		}
 		cnt += cluster_size;
@@ -693,7 +693,7 @@ vfat_fuse_read(const char *path, char *buf, size_t size, off_t offs,
 	}
 
 	if(cnt < size) {
-		if(read(vfat_info.fs, buf+cnt, size - cnt) != size - cnt) {
+		if(read(vfat_info.fd, buf+cnt, size - cnt) != size - cnt) {
 			err(1, "read cluster_size failed\n");
 		}
 		cnt += size-cnt;
