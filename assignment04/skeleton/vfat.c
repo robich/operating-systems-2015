@@ -197,8 +197,8 @@ chkSum (unsigned char *pFcbName) {
 }
 
 
-static int
-read_cluster(uint32_t cluster_no, fuse_fill_dir_t callback, void *callbackdata,bool first_cluster) {
+int
+vfat_read_cluster(uint32_t cluster_no, fuse_fill_dir_t callback, void *callbackdata,bool first_cluster) {
 	uint8_t check_sum = '\0';
 	char* buffer = calloc(MAX_NAME_SIZE*2, sizeof(char)); // Max size of name: 13 * 0x14 = 260
 	char* char_buffer = calloc(MAX_NAME_SIZE, sizeof(char));
@@ -456,7 +456,7 @@ vfat_readdir(uint32_t cluster_no, fuse_fill_dir_t callback, void *callbackdata)
 	st.st_nlink = 1;
 	bool first_cluster = true;
 	while(!eof) {
-		end_of_read = read_cluster(next_cluster_no, callback, callbackdata,first_cluster);
+		end_of_read = vfat_read_cluster(next_cluster_no, callback, callbackdata,first_cluster);
 		first_cluster = false;
 
 		if(end_of_read == END_OF_DIRECTORY) {
