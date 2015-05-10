@@ -521,10 +521,22 @@ int vfat_search_entry(void *data, const char *name, const struct stat *st, off_t
     return 1;
 }
 
-// Recursively find correct file/directory node given the path
-static int
-vfat_resolve(const char *path, struct stat *st)
+/**
+ * Fills in stat info for a file/directory given the path
+ * @path full path to a file, directories separated by slash
+ * @st file stat structure
+ * @returns 0 iff operation completed succesfully -errno on error
+*/
+int vfat_resolve(const char *path, struct stat *st)
 {
+	/* TODO: Add your code here.
+        You should tokenize the path (by slash separator) and then
+        for each token search the directory for the file/dir with that name.
+        You may find it useful to use following functions:
+        - strtok to tokenize by slash. See manpage
+        - vfat_readdir in conjuction with vfat_search_entry
+    */
+    
 	struct vfat_search_data sd;
 	int i;
 	const char *final_name;
@@ -549,21 +561,21 @@ vfat_resolve(const char *path, struct stat *st)
 			token = strtok(NULL, "/");
 			if(token == NULL) {
 				free(path_copy);
-				return -ENOENT;
+				return -1;
 			}
 			sd.name = token;
 			sd.found = 0;
 			vfat_readdir(((uint32_t) (sd.st)->st_ino), vfat_search_entry, &sd);
 			if(sd.found != 1) {
 				free(path_copy);
-				return -ENOENT;
+				return -1;
 			}
 		}
 		free(path_copy);
 		return 0;
 	} else {
 		free(path_copy);
-		return -ENOENT;
+		return -1;
 	}
 }
 
