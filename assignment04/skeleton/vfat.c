@@ -347,7 +347,7 @@ setStat(struct fat32_direntry dir_entry, char* buffer, fuse_fill_dir_t filler, v
 				off_t pos = lseek(vfat_info.fd, 0, SEEK_CUR);
 				while(next_cluster_no < (uint32_t) 0x0FFFFFF8) {
 					cnt++;
-					next_cluster_no = next_cluster(0x0FFFFFFF & next_cluster_no);
+					next_cluster_no = vfat_next_cluster(0x0FFFFFFF & next_cluster_no);
 				}
 				if(lseek(vfat_info.fd, pos, SEEK_SET) == -1) {
 					err(1, "Couldn't return to initial position: %lx", pos);
@@ -461,7 +461,7 @@ vfat_readdir(uint32_t cluster_no, fuse_fill_dir_t filler, void *fillerdata)
 		if(end_of_read == END_OF_DIRECTORY) {
 			eof = true;
 		} else {
-			next_cluster_no = 0x0FFFFFFF & next_cluster(next_cluster_no);
+			next_cluster_no = 0x0FFFFFFF & vfat_next_cluster(next_cluster_no);
 			if(next_cluster_no >= (uint32_t) 0x0FFFFFF8) {
 				eof = true;
 			}
@@ -587,7 +587,7 @@ vfat_fuse_getattr(const char *path, struct stat *st)
 		off_t pos = lseek(vfat_info.fd, 0, SEEK_CUR);
 		while(next_cluster_no < (uint32_t) 0x0FFFFFF8) {
 			cnt++;
-			next_cluster_no = next_cluster(0x0FFFFFFF & next_cluster_no);
+			next_cluster_no = vfat_next_cluster(0x0FFFFFFF & next_cluster_no);
 		}
 		if(lseek(vfat_info.fd, pos, SEEK_SET) == -1) {
 			err(1, "Couldn't return to initial position: %lx", pos);
@@ -646,7 +646,7 @@ vfat_fuse_read(const char *path, char *buf, size_t size, off_t offs,
 	}
 
 	while(offs >= cluster_size) {
-	    cluster_no = next_cluster(cluster_no);
+	    cluster_no = vfat_next_cluster(cluster_no);
 	    offs -= cluster_size;
 	}
 
@@ -668,7 +668,7 @@ vfat_fuse_read(const char *path, char *buf, size_t size, off_t offs,
 	}
 
 	while(size - cnt > cluster_size) {
-		cluster_no = next_cluster(cluster_no);
+		cluster_no = vfat_next_cluster(cluster_no);
 		seek_cluster(cluster_no);
 		DEBUG_PRINT("Read cluster_no %x\n", cluster_no);
 		if((cluster_no & 0x0fffffff) >= 0x0FFFFFF8) {
@@ -681,7 +681,7 @@ vfat_fuse_read(const char *path, char *buf, size_t size, off_t offs,
 		cnt += cluster_size;
 	}
 
-	cluster_no = next_cluster(cluster_no);
+	cluster_no = vfat_next_cluster(cluster_no);
 	seek_cluster(cluster_no);
 	if((cluster_no & 0x0fffffff) >= 0x0FFFFFF8) {
 	    memset(buf+cnt, 0, size-cnt);
