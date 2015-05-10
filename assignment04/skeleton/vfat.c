@@ -68,7 +68,7 @@ vfat_init(const char *dev)
 	// Throw error if not FAT32 volume
 	// See: http://www.win.tue.nl/~aeb/linux/fs/fat/fat-1.html for the deatils of FAT12, FAT16 and FAT32.
 	// See: http://read.pudn.com/downloads77/ebook/294884/FAT32%20Spec%20%28SDA%20Contribution%29.pdf for complete doc from Microsoft
-
+	// See: http://en.wikipedia.org/wiki/Design_of_the_FAT_file_system
 	if(s.root_max_entries != 0) {
 		err(1,"[Error] root_max_entries must be 0 in FAT32 volumes.\n");
 	}
@@ -331,6 +331,7 @@ conv_time(uint16_t date_entry, uint16_t time_entry) {
 
 void
 vfat_set_stat(struct fat32_direntry dir_entry, char* buffer, fuse_fill_dir_t callback, void *callbackdata, uint32_t cluster_no){
+	// See: http://linux.die.net/man/2/stat
 	struct stat* stat_str = malloc(sizeof(struct stat));
 	memset(stat_str, 0, sizeof(struct stat));
 	stat_str->st_dev = 0; // Ignored by FUSE
