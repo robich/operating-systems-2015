@@ -57,146 +57,142 @@ void seek_cluster(uint32_t cluster_no) {
 static void
 vfat_init(const char *dev)
 {
-    DEBUG_PRINT("vfat_init(1): start of function\n");
-    
-    struct fat_boot_header s;
-    
-    uint16_t rootDirSectors;
-    uint32_t fatSz, totSec, dataSec, countofClusters;
-    uint8_t fat_0;
+	uint16_t rootDirSectors;
+	uint32_t fatSz, totSec, dataSec, countofClusters, first_fat;
+	uint8_t fat_0;
+	iconv_utf16 = iconv_open("utf-8", "utf-16le"); // from utf-16 to utf-8
+	// These are useful so that we can setup correct permissions in the mounted directories
+	mount_uid = getuid();
+	mount_gid = getgid();
 
-    iconv_utf16 = iconv_open("utf-8", "utf-16"); // from utf-16 to utf-8
-    // These are useful so that we can setup correct permissions in the mounted directories
-    vfat_info.mount_uid = getuid();
-    vfat_info.mount_gid = getgid();
+	// Use mount time as mtime and ctime for the filesystem root entry (e.g. "/")
+	mount_time = time(NULL);
 
-    // Use mount time as mtime and ctime for the filesystem root entry (e.g. "/")
-    vfat_info.mount_time = time(NULL);
+	// Open the FAT file
+	vfat_info.fs = open(dev, O_RDONLY);
 
-    vfat_info.fs = open(dev, O_RDONLY);
-    if (vfat_info.fs < 0)
-        err(1, "open(%s)", dev);
-    if (pread(vfat_info.fs, &s, sizeof(s), 0) != sizeof(s))
-        err(1, "read super block");
-        
-    // Throw error if not FAT32 volume
-    // See: http://www.win.tue.nl/~aeb/linux/fs/fat/fat-1.html for the deatils of FAT12, FAT16 and FAT32.
-    // See: http://read.pudn.com/downloads77/ebook/294884/FAT32%20Spec%20%28SDA%20Contribution%29.pdf for complete doc from Microsoft
-
-	if(s.root_max_entries != 0) {
-		err(1,"[Error] root_max_entries must be 0 in FAT32 volumes.\n");
+	if (vfat_info.fs < 0) {
+		err(1, "open(%s)", dev);
 	}
-	rootDirSectors = ((s.root_max_entries * 32) +
-		(s.bytes_per_sector - 1)) / s.bytes_per_sector;
 
-	if(s.sectors_per_fat_small != 0){
-		fatSz = s.sectors_per_fat_small;
+	if(read(vfat_info.fs,&vfat_info.fat_boot, 512) != 512) {
+		err(1,"read(%s)",dev);
+	}
+
+	// Fat Type Determination:
+	if(vfat_info.fat_boot.root_max_entries != 0) {
+		err(1,"error: should be 0\n");
+	}
+	rootDirSectors = ((vfat_info.fat_boot.root_max_entries * 32) +
+		(vfat_info.fat_boot.bytes_per_sector - 1)) / vfat_info.fat_boot.bytes_per_sector;
+
+	if(vfat_info.fat_boot.sectors_per_fat_small != 0){
+		fatSz = vfat_info.fat_boot.sectors_per_fat_small;
 	} else{
-		fatSz = vfat_info.sectors_per_fat;
+		fatSz = vfat_info.fat_boot.fat32.sectors_per_fat;
 	}
 
-	if(s.total_sectors_small != 0){
-		totSec = s.total_sectors_small;
+	if(vfat_info.fat_boot.total_sectors_small != 0){
+		totSec = vfat_info.fat_boot.total_sectors_small;
 	} else {
-		totSec = s.total_sectors;
+		totSec = vfat_info.fat_boot.total_sectors;
 	}
-	
-	/* See page 17 of microsoft specs */
-	dataSec = totSec - (s.reserved_sectors +
-	(s.fat_count * fatSz) + rootDirSectors);
-	countofClusters = dataSec / s.sectors_per_cluster;
-    
+
+	dataSec = totSec - (vfat_info.fat_boot.reserved_sectors +
+	(vfat_info.fat_boot.fat_count * fatSz) + rootDirSectors);
+	countofClusters = dataSec / vfat_info.fat_boot.sectors_per_cluster;
+
 	if(countofClusters < 4085) {
-		err(1,"[Error] Volume is FAT12.\n");
+		err(1,"error: Volume is FAT12.\n");
 	} else if(countofClusters < 65525) {
-		err(1,"[Error] Volume is FAT16.\n");
+		err(1,"error: Volume is FAT16.\n");
 	} else {
-		DEBUG_PRINT("Volume looks like FAT32: it has %d clusters\n", countofClusters);
+		DEBUG_PRINT("Volume is FAT32.\n");
 	}
 
 	// Check all other fields
-	if(((char*)&s)[510] != 0x55 &&
-		((char*)&s)[511] != (char) 0xAA) {
-		err(1, "[Error] 510-511 must correspond to signature 0x55aa\n");
+	if(((char*)&vfat_info.fat_boot)[510] != 0x55 &&
+		((char*)&vfat_info.fat_boot)[511] != (char) 0xAA) {
+		err(1, "Magic number 0xAA55 not present\n");
 	}
 
-	if(s.jmp_boot[0] == 0xEB) {
-		if(s.jmp_boot[2] != 0x90) {
-			err(1, "[Error] bad jmp_boot[2]\n");
+	if(vfat_info.fat_boot.jmp_boot[0] == 0xEB) {
+		if(vfat_info.fat_boot.jmp_boot[2] != 0x90) {
+			err(1, "jmp_boot[2] is wrong\n");
 		}
-	} else if(s.jmp_boot[0] != 0xE9){
-		err(1, "[Error] bad jmp_boot[0]\n");
+	} else if(vfat_info.fat_boot.jmp_boot[0] != 0xE9){
+		err(1, "jmp_boot[0] is wrong\n");
 	}
 
-	if(s.bytes_per_sector != 512 &&
-		s.bytes_per_sector != 1024 &&
-		s.bytes_per_sector != 2048 &&
-		s.bytes_per_sector != 5096) {
+	if(vfat_info.fat_boot.bytes_per_sector != 512 &&
+		vfat_info.fat_boot.bytes_per_sector != 1024 &&
+		vfat_info.fat_boot.bytes_per_sector != 2048 &&
+		vfat_info.fat_boot.bytes_per_sector != 5096) {
 
-		err(1, "[Error] Illegal value for bytes_per_sector\n");
+		err(1, "bytes_per_sector is wrong\n");
 	}
 
-	if(s.sectors_per_cluster != 1 &&
-		s.sectors_per_cluster != 2 &&
-		s.sectors_per_cluster != 4 &&
-		s.sectors_per_cluster != 8 &&
-		s.sectors_per_cluster != 16 &&
-		s.sectors_per_cluster != 32 &&
-		s.sectors_per_cluster != 64 &&
-		s.sectors_per_cluster != 128) {
-		// Is there a cleverer way of checking? Maybe, it's only 8 am...
-		err(1, "[Error] bad sectors_per_cluster.\n");
+	if(vfat_info.fat_boot.sectors_per_cluster != 1 &&
+		vfat_info.fat_boot.sectors_per_cluster % 2 != 0) {
+		err(1, "sectors_per_cluster is wrong\n");
 	}
 
-	if(s.sectors_per_cluster *
-		s.bytes_per_sector > 32 * 1024) {
-		err(1, "[Error] Out of range bytes_per_sector * sectors_per_cluster\n");
+	if(vfat_info.fat_boot.sectors_per_cluster *
+		vfat_info.fat_boot.bytes_per_sector > 32 * 1024) {
+		err(1, "bytes_per_sector * sectors_per_cluster is too large\n");
 	}
 
-	if(s.reserved_sectors == 0) {
-		err(1, "[Error] Reserved_sectors cannot be zero.\n");
+	if(vfat_info.fat_boot.reserved_sectors == 0) {
+		err(1, "reserved_sectors is zero\n");
 	}
 
-	if(s.fat_count < 2) {
-		err(1, "[Error] fat_count must be one or two.\n");
-	} else {
-		vfat_info.fat_count = s.fat_count;
+	if(vfat_info.fat_boot.fat_count < 2) {
+		err(1, "fat count is less than two\n");
 	}
 
-	if(s.root_max_entries != 0) {
-		err(1, "[Error] root_max_entries must be zero.\n");
+	if(vfat_info.fat_boot.root_max_entries != 0) {
+		err(1, "root_max_entries must be zero\n");
 	}
 
-	if(s.total_sectors_small != 0) {
-		err(1, "[Error] total_sectors_small must be zero.\n");
+	if(vfat_info.fat_boot.total_sectors_small != 0) {
+		err(1, "total_sectors_small must be zero\n");
 	}
 
-	if(s.media_info != 0xF0 &&
-		s.media_info < 0xF8) {
-		err(1, "[Error] Bad media descriptor type.\n");
-	}
-
-	if(s.total_sectors == 0) {
-		err(1, "[Error] total_sectors must be non-zero\n");
+	if(vfat_info.fat_boot.media_info != 0xF0 &&
+		vfat_info.fat_boot.media_info < 0xF8) {
+		err(1, "Wrong media info\n");
 	}
 	
-	vfat_info.root_cluster = 0xFFFFFFF & s.root_cluster;
+	first_fat = vfat_info.fat_boot.reserved_sectors * vfat_info.fat_boot.bytes_per_sector;
+	if(lseek(vfat_info.fs, first_fat, SEEK_SET) == -1) {
+		err(1, "lseek(%u)", first_fat);
+	}
 
-	DEBUG_PRINT("Volume is FAT32 for sure.\n");
+	if(read(vfat_info.fs, &fat_0, sizeof(uint8_t)) != sizeof(uint8_t)) {
+		err(1, "read(%lu)", sizeof(uint8_t));
+	}
+	
+	if(fat_0 != vfat_info.fat_boot.media_info) {
+		err(1, "Media info is different in FAT[0]\n");
+	}
 
-    vfat_info.root_inode.st_ino = le32toh(s.root_cluster);
-    vfat_info.root_inode.st_mode = 0555 | S_IFDIR;
-    vfat_info.root_inode.st_nlink = 1;
-    vfat_info.root_inode.st_uid = vfat_info.mount_uid;
-    vfat_info.root_inode.st_gid = vfat_info.mount_gid;
-    vfat_info.root_inode.st_size = 0;
-    vfat_info.root_inode.st_atime = vfat_info.root_inode.st_mtime = vfat_info.root_inode.st_ctime = vfat_info.mount_time;
-    
-    //vfat_info.fat = mmap_file(vfat_info.fs, s.reserved_sectors * s.bytes_per_sector, s.sectors_per_fat * s.bytes_per_sector);
-    // TODO: do not forget to unmap :)
-    
-    DEBUG_PRINT("vfat_init(1): end of function\n");
+	if(vfat_info.fat_boot.sectors_per_fat_small != 0) {
+		err(1, "sectors per fat small must be zero\n");
+	}
 
+	if(vfat_info.fat_boot.total_sectors == 0) {
+		err(1, "total_sectors must be non-zero\n");
+	}
+	
+	vfat_info.root_cluster = 0xFFFFFFF & vfat_info.fat_boot.fat32.root_cluster;
+
+	// Microsoft specs do not say anything to be forced about sectors_per_fat
+	// and other fields of fat_boot_fat32 so we don't check them
+
+	DEBUG_PRINT("Volume seems really FAT32.\n");
+	if(lseek(vfat_info.fs, 0, SEEK_SET) == -1) {
+		err(1, "lseek(0)");
+	}
 }
 
 unsigned char
