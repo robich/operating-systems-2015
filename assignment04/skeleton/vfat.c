@@ -144,8 +144,6 @@ vfat_init(const char *dev)
 
 	if(s.fat_count < 2) {
 		err(1, "[Error] fat_count must be one or two.\n");
-	} else {
-		vfat_info.fat_count = s.fat_count;
 	}
 
 	if(s.root_max_entries != 0) {
