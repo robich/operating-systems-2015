@@ -580,12 +580,10 @@ int vfat_resolve(const char *path, struct stat *st)
 }
 
 // Get file attributes
-static int
-vfat_fuse_getattr(const char *path, struct stat *st)
+int vfat_fuse_getattr(const char *path, struct stat *st)
 {
-	/* XXX: This is example code, replace with your own implementation */
-	DEBUG_PRINT("fuse getattr %s\n", path);
-	// No such file
+	DEBUG_PRINT("[Info] fuse getattr %s\n", path);
+
 	if (strcmp(path, "/") == 0) {
 		st->st_dev = 0; // Ignored by FUSE
 		st->st_ino = 0; // Ignored by FUSE unless overridden
@@ -616,20 +614,37 @@ vfat_fuse_getattr(const char *path, struct stat *st)
 	}
 }
 
-
-static int
-vfat_fuse_readdir(const char *path, void *buf,
-		  fuse_fill_dir_t filler, off_t offs, struct fuse_file_info *fi)
+// Extended attributes useful for debugging
+int vfat_fuse_getxattr(const char *path, const char* name, char* buf, size_t size)
 {
-	DEBUG_PRINT("fuse readdir %s\n", path);
-	//assert(offs == 0);
+    struct stat st;
+    int ret = vfat_resolve(path, &st);
+    if (ret != 0) return ret;
+    if (strcmp(name, "debug.cluster") != 0) return -ENODATA;
+
+    if (buf == NULL) {
+        ret = snprintf(NULL, 0, "%u", (unsigned int) st.st_ino);
+        if (ret < 0) err(1, "WTF?");
+        return ret + 1;
+    } else {
+        ret = snprintf(buf, size, "%u", (unsigned int) st.st_ino);
+        if (ret >= size) return -ERANGE;
+        return ret;
+    }
+}
+	
+int vfat_fuse_readdir(
+        const char *path, void *callback_data,
+        fuse_fill_dir_t callback, off_t unused_offs, struct fuse_file_info *unused_fi)
+{
+	DEBUG_PRINT("[Info] fuse readdir %s\n", path);
 
 	struct stat st;
 	if(strcmp(path, "/") != 0) {
 		vfat_resolve(path+1, &st);
-		vfat_readdir((uint32_t)st.st_ino, filler, buf);
+		vfat_readdir((uint32_t)st.st_ino, callback, callback_data);
 	} else {
-	    vfat_readdir(vfat_info.root_cluster, filler, buf);
+	    vfat_readdir(vfat_info.root_cluster, callback, callback_data);
 	}
 	return 0;
 }
