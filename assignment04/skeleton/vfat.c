@@ -1,3 +1,4 @@
+// vim: noet:ts=4:sts=4:sw=4:et
 #define FUSE_USE_VERSION 26
 #define _GNU_SOURCE
 
