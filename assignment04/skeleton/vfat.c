@@ -648,13 +648,19 @@ int vfat_fuse_readdir(
 	}
 	return 0;
 }
-
-static int
-vfat_fuse_read(const char *path, char *buf, size_t size, off_t offs,
-	       struct fuse_file_info *fi)
+	
+int vfat_fuse_read(
+        const char *path, char *buf, size_t size, off_t offs,
+        struct fuse_file_info *unused)
 {
 	DEBUG_PRINT("fuse read %s\n", path);
-	assert(size > 1);
+	
+	if (strncmp(path, DEBUGFS_PATH, strlen(DEBUGFS_PATH)) == 0) {
+        // This is handled by debug virtual filesystem
+        return debugfs_fuse_read(path + strlen(DEBUGFS_PATH), buf, size, offs, unused);
+	    }
+	    /* TODO: Add your code here. Look at debugfs_fuse_read for example interaction.
+	    */
 
 	struct stat st;
 	vfat_resolve(path+1, &st);
