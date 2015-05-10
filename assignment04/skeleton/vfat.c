@@ -301,7 +301,7 @@ read_cluster(uint32_t cluster_no, fuse_fill_dir_t callback, void *callbackdata,b
 			memset(buffer, 0, MAX_NAME_SIZE);
 		} else {
 			char *filename = char_buffer;
-			getfilename(short_entry.nameext, filename);
+			vfat_get_file_name(short_entry.nameext, filename);
 			setStat(short_entry,filename,callback,callbackdata,
 			(((uint32_t)short_entry.cluster_hi) << 16) | ((uint32_t)short_entry.cluster_lo));
 		}
@@ -373,7 +373,7 @@ setStat(struct fat32_direntry dir_entry, char* buffer, fuse_fill_dir_t callback,
 }
 
 char*
-getfilename(char* nameext, char* filename) {
+vfat_get_file_name(char* nameext, char* filename) {
 	if(nameext[0] == 0x20) {
 		err(1, "[Error] the name cannot strat with a space.");
 	}
