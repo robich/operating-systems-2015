@@ -28,7 +28,7 @@
 struct vfat_data {
 	const char	*dev;
 	int		fs;
-	struct fat_boot  fat_boot;
+	struct fat_boot_header  fat_boot;
 	/* XXX add your code here */
 	uint32_t root_cluster;
 };
@@ -47,7 +47,7 @@ void seek_cluster(uint32_t cluster_no) {
     }
 
     uint32_t firstDataSector = vfat_info.fat_boot.reserved_sectors +
-	(vfat_info.fat_boot.fat_count * vfat_info.fat_boot.fat32.sectors_per_fat);
+	(vfat_info.fat_boot.fat_count * vfat_info.fat_boot.sectors_per_fat);
     uint32_t firstSectorofCluster = ((cluster_no - 2) * vfat_info.fat_boot.sectors_per_cluster) + firstDataSector;
     if(lseek(vfat_info.fs, firstSectorofCluster * vfat_info.fat_boot.bytes_per_sector, SEEK_SET) == -1) {
 	err(1, "lseek cluster_no %d\n", cluster_no);
@@ -89,7 +89,7 @@ vfat_init(const char *dev)
 	if(vfat_info.fat_boot.sectors_per_fat_small != 0){
 		fatSz = vfat_info.fat_boot.sectors_per_fat_small;
 	} else{
-		fatSz = vfat_info.fat_boot.fat32.sectors_per_fat;
+		fatSz = vfat_info.fat_boot.sectors_per_fat;
 	}
 
 	if(vfat_info.fat_boot.total_sectors_small != 0){
@@ -184,7 +184,7 @@ vfat_init(const char *dev)
 		err(1, "total_sectors must be non-zero\n");
 	}
 	
-	vfat_info.root_cluster = 0xFFFFFFF & vfat_info.fat_boot.fat32.root_cluster;
+	vfat_info.root_cluster = 0xFFFFFFF & vfat_info.fat_boot.root_cluster;
 
 	// Microsoft specs do not say anything to be forced about sectors_per_fat
 	// and other fields of fat_boot_fat32 so we don't check them
@@ -497,7 +497,7 @@ next_cluster(uint32_t cluster_no) {
 		err(1, "read(%lu)",sizeof(uint32_t));
 	}
 
-	if(lseek(vfat_info.fs, first_fat + vfat_info.fat_boot.fat32.sectors_per_fat * vfat_info.fat_boot.bytes_per_sector + cluster_no * sizeof(uint32_t) , SEEK_SET) == -1) {
+	if(lseek(vfat_info.fs, first_fat + vfat_info.fat_boot.sectors_per_fat * vfat_info.fat_boot.bytes_per_sector + cluster_no * sizeof(uint32_t) , SEEK_SET) == -1) {
 		err(1, "lseek(%d)", first_fat);
 	}
 
