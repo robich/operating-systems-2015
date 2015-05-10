@@ -10,7 +10,6 @@
 #include <fcntl.h>
 #include <fuse.h>
 #include <iconv.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -655,10 +654,10 @@ int vfat_fuse_read(
 {
 	DEBUG_PRINT("fuse read %s\n", path);
 	
-	if (strncmp(path, DEBUGFS_PATH, strlen(DEBUGFS_PATH)) == 0) {
+	/*if (strncmp(path, DEBUGFS_PATH, strlen(DEBUGFS_PATH)) == 0) {
         // This is handled by debug virtual filesystem
         return debugfs_fuse_read(path + strlen(DEBUGFS_PATH), buf, size, offs, unused);
-	    }
+	}*/
 	    /* TODO: Add your code here. Look at debugfs_fuse_read for example interaction.
 	    */
 
