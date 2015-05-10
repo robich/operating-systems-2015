@@ -42,42 +42,6 @@ struct fat_boot_header {
     /*510*/ uint16_t signature;
 } __attribute__ ((__packed__));
 
-struct fat_boot_fat32 {
-	/*36*/	uint32_t	sectors_per_fat;//BPB_FATSz32
-	/*40*/	uint16_t	fat_flags;
-	/*42*/	uint16_t	version;
-	/*44*/	uint32_t	root_cluster;//BPB_RootClus
-	/*48*/	uint16_t	fsinfo_sector;
-	/*50*/	uint16_t	backup_sector;
-	/*52*/	uint8_t		reserved2[12];
-	/*64*/	uint8_t		drive_number;
-	/*65*/	uint8_t		reserved3;
-	/*66*/	uint8_t		ext_sig;
-	/*67*/	uint32_t	serial;
-	/*71*/	char		label[11];
-	/*82*/	char		type[8];
-} __attribute__ ((__packed__));
-
-// Boot sector
-struct fat_boot {
-	/* 0*/	uint8_t		jmp_boot[3];
-	/* 3*/	char		oemname[8];
-	/*11*/	uint16_t	bytes_per_sector;//BPB_BytsPerSec
-	/*13*/	uint8_t		sectors_per_cluster;//BPB_SecPerClus
-	/*14*/	uint16_t	reserved_sectors;//BPB_RsvdSecCnt
-	/*16*/	uint8_t		fat_count;//BPB_NumFATs
-	/*17*/	uint16_t	root_max_entries; //BPB_RootEntCnt
-	/*19*/	uint16_t	total_sectors_small;//BPB_TotSec16
-	/*21*/	uint8_t		media_info;//BPB_Media
-	/*22*/	uint16_t	sectors_per_fat_small;//BPB_FATSz16
-	/*24*/	uint16_t	sectors_per_track;
-	/*26*/	uint16_t	head_count;
-	/*28*/	uint32_t	fs_offset;
-	/*32*/	uint32_t	total_sectors;//BPB_TotSec32
-	/*36*/	struct fat_boot_fat32  fat32;
-} __attribute__ ((__packed__));
-
-
 struct fat32_direntry {
 	/* 0*/	union {
 			struct {
