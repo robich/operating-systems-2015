@@ -5,7 +5,7 @@ LDFLAGS=-lfuse
 .PHONY: all
 all:vfat
 
-vfat: vfat.o util.o debugfs.o
+vfat: vfat.o util.o # debugfs.o
 	$(CC) $(LDFLAGS) $^ -o $@
 
 %.o: %.cc *.h
