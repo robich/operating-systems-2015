@@ -196,7 +196,7 @@ chkSum (unsigned char *pFcbName) {
 
 
 static int
-read_cluster(uint32_t cluster_no, fuse_fill_dir_t filler, void *fillerdata,bool first_cluster) {
+read_cluster(uint32_t cluster_no, fuse_fill_dir_t callback, void *callbackdata, bool first_cluster) {
 	uint8_t check_sum = '\0';
 	char* buffer = calloc(MAX_NAME_SIZE*2, sizeof(char)); // Max size of name: 13 * 0x14 = 260
 	char* char_buffer = calloc(MAX_NAME_SIZE, sizeof(char));
@@ -215,7 +215,7 @@ read_cluster(uint32_t cluster_no, fuse_fill_dir_t filler, void *fillerdata,bool 
 
 		if(i < 64 && first_cluster && cluster_no != 2){
 			char* filename = (i == 0) ? "." : "..";
-			setStat(short_entry,filename,filler,fillerdata,
+			setStat(short_entry, filename, callback, callbackdata,
 			(((uint32_t)short_entry.cluster_hi) << 16) | ((uint32_t)short_entry.cluster_lo));
 
 			continue;
@@ -293,14 +293,14 @@ read_cluster(uint32_t cluster_no, fuse_fill_dir_t filler, void *fillerdata,bool 
 			in_byte_size = MAX_NAME_SIZE*2;
 			out_byte_size = MAX_NAME_SIZE;
 			char *filename = char_buffer;
-			setStat(short_entry,filename,filler,fillerdata,
+			setStat(short_entry, filename, callback, callbackdata,
 			(((uint32_t)short_entry.cluster_hi) << 16) | ((uint32_t)short_entry.cluster_lo));
 			check_sum = '\0';
 			memset(buffer, 0, MAX_NAME_SIZE);
 		} else {
 			char *filename = char_buffer;
 			getfilename(short_entry.nameext, filename);
-			setStat(short_entry,filename,filler,fillerdata,
+			setStat(short_entry, filename, callback, callbackdata,
 			(((uint32_t)short_entry.cluster_hi) << 16) | ((uint32_t)short_entry.cluster_lo));
 		}
 	}
