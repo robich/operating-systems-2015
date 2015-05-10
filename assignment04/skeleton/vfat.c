@@ -733,38 +733,32 @@ struct fuse_file_info *unused)
 }
 
 ////////////// No need to modify anything below this point
-static int
+int
 vfat_opt_args(void *data, const char *arg, int key, struct fuse_args *oargs)
 {
-	if (key == FUSE_OPT_KEY_NONOPT && !vfat_info.dev) {
-		vfat_info.dev = strdup(arg);
-		return (0);
-	}
-	return (1);
+    if (key == FUSE_OPT_KEY_NONOPT && !vfat_info.dev) {
+        vfat_info.dev = strdup(arg);
+        return (0);
+    }
+    return (1);
 }
 
-static struct fuse_operations vfat_available_ops = {
-	.getattr = vfat_fuse_getattr,
-	.readdir = vfat_fuse_readdir,
-	.read = vfat_fuse_read,
+struct fuse_operations vfat_available_ops = {
+    .getattr = vfat_fuse_getattr,
+    .getxattr = vfat_fuse_getxattr,
+    .readdir = vfat_fuse_readdir,
+    .read = vfat_fuse_read,
 };
 
-void int_handler(int sig) {
-	iconv_close(iconv_utf16);
-	exit(0);
-}
-
-int
-main(int argc, char **argv)
+int main(int argc, char **argv)
 {
-	signal(SIGINT, int_handler);
-	struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
+    struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
 
-	fuse_opt_parse(&args, NULL, NULL, vfat_opt_args);
+    fuse_opt_parse(&args, NULL, NULL, vfat_opt_args);
 
-	if (!vfat_info.dev)
-	errx(1, "missing file system parameter");
+    if (!vfat_info.dev)
+        errx(1, "missing file system parameter");
 
-	vfat_init(vfat_info.dev);
-	return (fuse_main(args.argc, args.argv, &vfat_available_ops, NULL));
+    vfat_init(vfat_info.dev);
+    return (fuse_main(args.argc, args.argv, &vfat_available_ops, NULL));
 }
