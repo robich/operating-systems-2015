@@ -444,10 +444,8 @@ getfilename(char* nameext, char* filename) {
 static int
 vfat_readdir(uint32_t cluster_no, fuse_fill_dir_t filler, void *fillerdata)
 {
-int vfat_readdir(uint32_t first_cluster, fuse_fill_dir_t callback, void *callbackdata)
-{
 	struct stat st; // we can reuse same stat entry over and over again
-	uint32_t next_cluster_no = first_cluster;
+	uint32_t next_cluster_no = cluster_no;
 	bool eof = false;
 	int end_of_read;
 
@@ -455,9 +453,9 @@ int vfat_readdir(uint32_t first_cluster, fuse_fill_dir_t callback, void *callbac
 	st.st_uid = vfat_info.mount_uid;
 	st.st_gid = vfat_info.mount_gid;
 	st.st_nlink = 1;
-	bool first_cluster_bool = true;
+	bool first_cluster = true;
 	while(!eof) {
-		end_of_read = read_cluster(next_cluster_no, callback, callbackdata, first_cluster_bool);
+		end_of_read = read_cluster(next_cluster_no, filler, fillerdata,first_cluster);
 		first_cluster = false;
 
 		if(end_of_read == END_OF_DIRECTORY) {
