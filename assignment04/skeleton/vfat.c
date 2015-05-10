@@ -26,11 +26,6 @@
 
 iconv_t iconv_utf16;
 
-static uid_t mount_uid;
-static gid_t mount_gid;
-time_t mount_time;
-
-
 void seek_cluster(uint32_t cluster_no) {
     if(cluster_no < 2) {
 	err(1, "cluster number < 2");
@@ -46,28 +41,26 @@ void seek_cluster(uint32_t cluster_no) {
 
 static void
 vfat_init(const char *dev)
-{
+{	
+	struct fat_boot_header s;
+	
 	uint16_t rootDirSectors;
 	uint32_t fatSz, totSec, dataSec, countofClusters, first_fat;
 	uint8_t fat_0;
-	iconv_utf16 = iconv_open("utf-8", "utf-16le"); // from utf-16 to utf-8
-	// These are useful so that we can setup correct permissions in the mounted directories
-	mount_uid = getuid();
-	mount_gid = getgid();
+	
+	iconv_utf16 = iconv_open("utf-8", "utf-16"); // from utf-16 to utf-8
+    // These are useful so that we can setup correct permissions in the mounted directories
+    vfat_info.mount_uid = getuid();
+    vfat_info.mount_gid = getgid();
 
-	// Use mount time as mtime and ctime for the filesystem root entry (e.g. "/")
-	mount_time = time(NULL);
+    // Use mount time as mtime and ctime for the filesystem root entry (e.g. "/")
+    vfat_info.mount_time = time(NULL);
 
-	// Open the FAT file
-	vfat_info.fd = open(dev, O_RDONLY);
-
-	if (vfat_info.fd < 0) {
-		err(1, "open(%s)", dev);
-	}
-
-	if(read(vfat_info.fd,&vfat_info.fat_boot, 512) != 512) {
-		err(1,"read(%s)",dev);
-	}
+    vfat_info.fd = open(dev, O_RDONLY);
+    if (vfat_info.fd < 0)
+        err(1, "open(%s)", dev);
+    if (pread(vfat_info.fd, &vfat_info.fat_boot, sizeof(s), 0) != sizeof(s))
+        err(1, "read super block");
 
 	// Fat Type Determination:
 	if(vfat_info.fat_boot.root_max_entries != 0) {
@@ -367,8 +360,8 @@ setStat(struct fat32_direntry dir_entry, char* buffer, fuse_fill_dir_t filler, v
 				stat_str->st_size = dir_entry.size;
 			}
 			stat_str->st_nlink = 1;
-			stat_str->st_uid = mount_uid;
-			stat_str->st_gid = mount_gid;
+			stat_str->st_uid = vfat_info.mount_uid;
+			stat_str->st_gid = vfat_info.mount_gid;
 			stat_str->st_rdev = 0;
 			stat_str->st_blksize = 0; // Ignored by FUSE
 			stat_str->st_blocks = 1;
@@ -458,8 +451,8 @@ vfat_readdir(uint32_t cluster_no, fuse_fill_dir_t filler, void *fillerdata)
 	int end_of_read;
 
 	memset(&st, 0, sizeof(st));
-	st.st_uid = mount_uid;
-	st.st_gid = mount_gid;
+	st.st_uid = vfat_info.mount_uid;
+	st.st_gid = vfat_info.mount_gid;
 	st.st_nlink = 1;
 	bool first_cluster = true;
 	while(!eof) {
@@ -588,8 +581,8 @@ vfat_fuse_getattr(const char *path, struct stat *st)
 		st->st_ino = 0; // Ignored by FUSE unless overridden
 		st->st_mode = S_IRWXU | S_IRWXG | S_IRWXO | S_IFDIR;
 		st->st_nlink = 1;
-		st->st_uid = mount_uid;
-		st->st_gid = mount_gid;
+		st->st_uid = vfat_info.mount_uid;
+		st->st_gid = vfat_info.mount_gid;
 		st->st_rdev = 0;
 		int cnt = 0;
 		uint32_t next_cluster_no = vfat_info.root_cluster;
