@@ -196,7 +196,7 @@ chkSum (unsigned char *pFcbName) {
 
 
 static int
-read_cluster(uint32_t cluster_no, fuse_fill_dir_t callback, void *callbackdata, bool first_cluster) {
+read_cluster(uint32_t cluster_no, fuse_fill_dir_t filler, void *fillerdata,bool first_cluster) {
 	uint8_t check_sum = '\0';
 	char* buffer = calloc(MAX_NAME_SIZE*2, sizeof(char)); // Max size of name: 13 * 0x14 = 260
 	char* char_buffer = calloc(MAX_NAME_SIZE, sizeof(char));
@@ -215,7 +215,7 @@ read_cluster(uint32_t cluster_no, fuse_fill_dir_t callback, void *callbackdata, 
 
 		if(i < 64 && first_cluster && cluster_no != 2){
 			char* filename = (i == 0) ? "." : "..";
-			setStat(short_entry, filename, callback, callbackdata,
+			setStat(short_entry,filename,filler,fillerdata,
 			(((uint32_t)short_entry.cluster_hi) << 16) | ((uint32_t)short_entry.cluster_lo));
 
 			continue;
@@ -293,14 +293,14 @@ read_cluster(uint32_t cluster_no, fuse_fill_dir_t callback, void *callbackdata, 
 			in_byte_size = MAX_NAME_SIZE*2;
 			out_byte_size = MAX_NAME_SIZE;
 			char *filename = char_buffer;
-			setStat(short_entry, filename, callback, callbackdata,
+			setStat(short_entry,filename,filler,fillerdata,
 			(((uint32_t)short_entry.cluster_hi) << 16) | ((uint32_t)short_entry.cluster_lo));
 			check_sum = '\0';
 			memset(buffer, 0, MAX_NAME_SIZE);
 		} else {
 			char *filename = char_buffer;
 			getfilename(short_entry.nameext, filename);
-			setStat(short_entry, filename, callback, callbackdata,
+			setStat(short_entry,filename,filler,fillerdata,
 			(((uint32_t)short_entry.cluster_hi) << 16) | ((uint32_t)short_entry.cluster_lo));
 		}
 	}
@@ -540,6 +540,7 @@ int vfat_resolve(const char *path, struct stat *st)
 	int i;
 	const char *final_name;
 	char *token = NULL, *path_copy;
+	int not_found = -ENOENT; // Not Found
 
 	path_copy = malloc(strlen(path) + 1);
 	strncpy(path_copy, path, strlen(path) + 1);
@@ -560,21 +561,21 @@ int vfat_resolve(const char *path, struct stat *st)
 			token = strtok(NULL, "/");
 			if(token == NULL) {
 				free(path_copy);
-				return -1;
+				return not_found;
 			}
 			sd.name = token;
 			sd.found = 0;
 			vfat_readdir(((uint32_t) (sd.st)->st_ino), vfat_search_entry, &sd);
 			if(sd.found != 1) {
 				free(path_copy);
-				return -1;
+				return not_found;
 			}
 		}
 		free(path_copy);
-		return 0;
+		return 0; // Found
 	} else {
 		free(path_copy);
-		return -1;
+		return not_found;
 	}
 }
 
@@ -605,11 +606,8 @@ int vfat_fuse_getattr(const char *path, struct stat *st)
 		st->st_blksize = 0; // Ignored by FUSE
 		st->st_blocks = 1;
 		return 0;
-	}
-	if(vfat_resolve(path + 1, st) != 0) {
-		return -ENOENT;
 	} else {
-		return 0;
+		return vfat_resolve(path + 1, st);
 	}
 }
 
@@ -733,32 +731,38 @@ struct fuse_file_info *unused)
 }
 
 ////////////// No need to modify anything below this point
-int
+static int
 vfat_opt_args(void *data, const char *arg, int key, struct fuse_args *oargs)
 {
-    if (key == FUSE_OPT_KEY_NONOPT && !vfat_info.dev) {
-        vfat_info.dev = strdup(arg);
-        return (0);
-    }
-    return (1);
+	if (key == FUSE_OPT_KEY_NONOPT && !vfat_info.dev) {
+		vfat_info.dev = strdup(arg);
+		return (0);
+	}
+	return (1);
 }
 
-struct fuse_operations vfat_available_ops = {
-    .getattr = vfat_fuse_getattr,
-    //.getxattr = vfat_fuse_getxattr,
-    .readdir = vfat_fuse_readdir,
-    .read = vfat_fuse_read,
+static struct fuse_operations vfat_available_ops = {
+	.getattr = vfat_fuse_getattr,
+	.readdir = vfat_fuse_readdir,
+	.read = vfat_fuse_read,
 };
 
-int main(int argc, char **argv)
+void int_handler(int sig) {
+	iconv_close(iconv_utf16);
+	exit(0);
+}
+
+int
+main(int argc, char **argv)
 {
-    struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
+	signal(SIGINT, int_handler);
+	struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
 
-    fuse_opt_parse(&args, NULL, NULL, vfat_opt_args);
+	fuse_opt_parse(&args, NULL, NULL, vfat_opt_args);
 
-    if (!vfat_info.dev)
-        errx(1, "missing file system parameter");
+	if (!vfat_info.dev)
+	errx(1, "missing file system parameter");
 
-    vfat_init(vfat_info.dev);
-    return (fuse_main(args.argc, args.argv, &vfat_available_ops, NULL));
+	vfat_init(vfat_info.dev);
+	return (fuse_main(args.argc, args.argv, &vfat_available_ops, NULL));
 }
