@@ -275,7 +275,7 @@ setStat(struct fat32_direntry dir_entry, char* buffer, fuse_fill_dir_t filler, v
 				off_t pos = lseek(vfat_info.fd, 0, SEEK_CUR);
 				while(next_cluster_no < (uint32_t) 0x0FFFFFF8) {
 					cnt++;
-					next_cluster_no = next_cluster(0x0FFFFFFF & next_cluster_no);
+					next_cluster_no = vfat_next_cluster(0x0FFFFFFF & next_cluster_no);
 				}
 				if(lseek(vfat_info.fd, pos, SEEK_SET) == -1) {
 					err(1, "Couldn't return to initial position: %lx", pos);
