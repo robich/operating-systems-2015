@@ -129,4 +129,4 @@ void vfat_seek_cluster(uint32_t c);
 int vfat_read_cluster(uint32_t c, fuse_fill_dir_t callback, void *callbackdata, bool first_cluster);
 char* vfat_get_file_name(char* nameext, char* filename);
 uint32_t next_cluster(uint32_t c);
-void setStat(struct fat32_direntry dir_entry, char* buffer, fuse_fill_dir_t callback, void *callbackdata, uint32_t c);
+void vfat_set_stat(struct fat32_direntry dir_entry, char* buffer, fuse_fill_dir_t callback, void *callbackdata, uint32_t c);
