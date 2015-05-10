@@ -41,7 +41,9 @@ void seek_cluster(uint32_t cluster_no) {
 
 static void
 vfat_init(const char *dev)
-{	
+{
+	DEBUG_PRINT("vfat_init(1): start of function\n");
+	
 	struct fat_boot_header s;
 	
 	uint16_t rootDirSectors;
@@ -172,7 +174,7 @@ vfat_init(const char *dev)
 	// Microsoft specs do not say anything to be forced about sectors_per_fat
 	// and other fields of fat_boot_fat32 so we don't check them
 
-	DEBUG_PRINT("Volume seems really FAT32.\n");
+	DEBUG_PRINT("Volume is FAT32 for sure.\n");
 	
 	vfat_info.root_inode.st_ino = le32toh(vfat_info.fat_boot.root_cluster);
     vfat_info.root_inode.st_mode = 0555 | S_IFDIR;
@@ -181,6 +183,11 @@ vfat_init(const char *dev)
     vfat_info.root_inode.st_gid = vfat_info.mount_gid;
     vfat_info.root_inode.st_size = 0;
     vfat_info.root_inode.st_atime = vfat_info.root_inode.st_mtime = vfat_info.root_inode.st_ctime = vfat_info.mount_time;
+    
+    //vfat_info.fat = mmap_file(vfat_info.fd, s.reserved_sectors * s.bytes_per_sector, s.sectors_per_fat * s.bytes_per_sector);
+    // TODO: do not forget to unmap :)
+    
+    DEBUG_PRINT("vfat_init(1): end of function\n");
 }
 
 unsigned char
