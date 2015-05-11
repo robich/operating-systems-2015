@@ -119,9 +119,9 @@ struct vfat_data {
 struct vfat_data vfat_info;
 
 /// FOR debugfs
-/*int vfat_next_cluster(unsigned int c);
+int vfat_next_cluster(unsigned int c);
 int vfat_resolve(const char *path, struct stat *st);
-int vfat_fuse_getattr(const char *path, struct stat *st);*/
+int vfat_fuse_getattr(const char *path, struct stat *st);
 ///
 
 #endif
