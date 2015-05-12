@@ -182,9 +182,9 @@ vfat_init(const char *dev)
 	// TODO: do not forget to unmap :)
 	
 	if (vfat_info.fat < 0) {
-		err(1, "[Error] mmap failed");
+		err(1, "[Error] mmap failed\n");
 	} else {
-		DEBUG_PRINT("[Info] mmap success");
+		DEBUG_PRINT("[Info] mmap success\n");
 	}
 	vfat_info.fat_boot = s; // easier
 	
