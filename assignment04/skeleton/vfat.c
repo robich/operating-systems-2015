@@ -755,6 +755,7 @@ vfat_opt_args(void *data, const char *arg, int key, struct fuse_args *oargs)
 static struct fuse_operations vfat_available_ops = {
 	.getattr = vfat_fuse_getattr,
 	.readdir = vfat_fuse_readdir,
+	.getxattr = vfat_fuse_getxattr,
 	.read = vfat_fuse_read,
 };
 
