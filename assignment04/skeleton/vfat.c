@@ -177,9 +177,15 @@ vfat_init(const char *dev)
 	vfat_info.root_inode.st_atime = vfat_info.root_inode.st_mtime = vfat_info.root_inode.st_ctime = vfat_info.mount_time;
 	
 	// Error: vfat: mmap failed: Invalid argument
-	DEBUG_PRINT("[Info] Attempting to mmap: fd=%d, reserved_sectors=%d, bytes_per_sector=%d, sectors_per_fat=%d, bytes_per_sector=%d\n", vfat_info.fd, s.reserved_sectors, s.bytes_per_sector, s.sectors_per_fat, s.bytes_per_sector);
+	DEBUG_PRINT("[Info] Attempting to mmap: \n[Info] fd=%d, reserved_sectors=%d, bytes_per_sector=%d\n[Info] sectors_per_fat=%d, bytes_per_sector=%d\n", vfat_info.fd, s.reserved_sectors, s.bytes_per_sector, s.sectors_per_fat, s.bytes_per_sector);
 	vfat_info.fat = mmap_file(vfat_info.fd, s.reserved_sectors * s.bytes_per_sector, s.sectors_per_fat * s.bytes_per_sector);
 	// TODO: do not forget to unmap :)
+	
+	if (vfat_info.fat < 0) {
+		err(1, "[Error] mmap failed");
+	} else {
+		DEBUG_PRINT("[Info] mmap success");
+	}
 	vfat_info.fat_boot = s; // easier
 	
 	DEBUG_PRINT("[Info] vfat_init(1): end of function\n");
