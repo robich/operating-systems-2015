@@ -632,7 +632,7 @@ int vfat_fuse_getattr(const char *path, struct stat *st)
 int vfat_fuse_getxattr(const char *path, const char* name, char* buf, size_t size)
 {
 	
-	DEBUG_PRINT("[Info] fuse getxattr path=%s, name=%s, buf=%s\n", path, name, buf);
+	DEBUG_PRINT("[Info] fuse getxattr path=%s, name=%s, buf=%x, size=%d\n", path, name, buf, size);
 	
 	struct stat st;
 	int ret = vfat_resolve(path, &st);
@@ -763,7 +763,7 @@ vfat_opt_args(void *data, const char *arg, int key, struct fuse_args *oargs)
 
 struct fuse_operations vfat_available_ops = {
 	.getattr = vfat_fuse_getattr,
-	//.getxattr = vfat_fuse_getxattr,
+	.getxattr = vfat_fuse_getxattr,
 	.readdir = vfat_fuse_readdir,
 	.read = vfat_fuse_read,
 };
