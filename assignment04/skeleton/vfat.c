@@ -700,7 +700,7 @@ struct fuse_file_info *unused)
 		if(read(vfat_info.fd, buf+cnt, size) != size) {
 			err(1, "read cluster-offs > size failed\n");
 		}
-		return 0; // TODO CHECK THIS
+		return 0;
 	} else {
 		if(read(vfat_info.fd, buf+cnt, cluster_size - offs) != cluster_size-offs) {
 			err(1, "read cluster-offs <= size failed\n");
