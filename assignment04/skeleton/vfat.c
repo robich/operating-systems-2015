@@ -763,7 +763,7 @@ vfat_opt_args(void *data, const char *arg, int key, struct fuse_args *oargs)
 
 struct fuse_operations vfat_available_ops = {
 	.getattr = vfat_fuse_getattr,
-	.getxattr = vfat_fuse_getxattr,
+	//.getxattr = vfat_fuse_getxattr, // segfault at mount time
 	.readdir = vfat_fuse_readdir,
 	.read = vfat_fuse_read,
 };
