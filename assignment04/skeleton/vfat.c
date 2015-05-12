@@ -594,37 +594,46 @@ int vfat_resolve(const char *path, struct stat *st)
 int vfat_fuse_getattr(const char *path, struct stat *st)
 {
 	DEBUG_PRINT("[Info] fuse getattr %s\n", path);
-
-	if (strcmp(path, "/") == 0) {
-		st->st_dev = 0;
-		st->st_ino = 0;
-		st->st_mode = S_IRWXU | S_IRWXG | S_IRWXO | S_IFDIR;
-		st->st_nlink = 1;
-		st->st_uid = vfat_info.mount_uid;
-		st->st_gid = vfat_info.mount_gid;
-		st->st_rdev = 0;
-		int cnt = 0;
-		uint32_t next_cluster_no = vfat_info.root_cluster;
-		off_t pos = lseek(vfat_info.fd, 0, SEEK_CUR);
-		while(next_cluster_no < (uint32_t) 0x0FFFFFF8) {
-			cnt++;
-			next_cluster_no = vfat_next_cluster(0x0FFFFFFF & next_cluster_no);
-		}
-		if(lseek(vfat_info.fd, pos, SEEK_SET) == -1) {
-			err(1, "Couldn't return to initial position: %lx", pos);
-		}
-		st->st_size = cnt * vfat_info.fat_boot.sectors_per_cluster*vfat_info.fat_boot.bytes_per_sector;
-		st->st_blksize = 0;
-		st->st_blocks = 1;
-		return 0;
+	
+	if (strncmp(path, DEBUGFS_PATH, strlen(DEBUGFS_PATH)) == 0) {
+		// This is handled by debug virtual filesystem
+		return debugfs_fuse_getattr(path + strlen(DEBUGFS_PATH), st);
 	} else {
-		return vfat_resolve(path + 1, st);
+		// Normal file
+		if (strcmp(path, "/") == 0) {
+			st->st_dev = 0;
+			st->st_ino = 0;
+			st->st_mode = S_IRWXU | S_IRWXG | S_IRWXO | S_IFDIR;
+			st->st_nlink = 1;
+			st->st_uid = vfat_info.mount_uid;
+			st->st_gid = vfat_info.mount_gid;
+			st->st_rdev = 0;
+			int cnt = 0;
+			uint32_t next_cluster_no = vfat_info.root_cluster;
+			off_t pos = lseek(vfat_info.fd, 0, SEEK_CUR);
+			while(next_cluster_no < (uint32_t) 0x0FFFFFF8) {
+				cnt++;
+				next_cluster_no = vfat_next_cluster(0x0FFFFFFF & next_cluster_no);
+			}
+			if(lseek(vfat_info.fd, pos, SEEK_SET) == -1) {
+				err(1, "Couldn't return to initial position: %lx", pos);
+			}
+			st->st_size = cnt * vfat_info.fat_boot.sectors_per_cluster*vfat_info.fat_boot.bytes_per_sector;
+			st->st_blksize = 0;
+			st->st_blocks = 1;
+			return 0;
+		} else {
+			return vfat_resolve(path + 1, st);
+		}
 	}
 }
 
 // Extended attributes useful for debugging
 int vfat_fuse_getxattr(const char *path, const char* name, char* buf, size_t size)
 {
+	
+	DEBUG_PRINT("[Info] fuse getxattr path=%s, name=%s, buf=%s\n", path, name, buf);
+	
 	struct stat st;
 	int ret = vfat_resolve(path, &st);
 	if (ret != 0) return ret;
@@ -745,29 +754,29 @@ struct fuse_file_info *unused)
 int
 vfat_opt_args(void *data, const char *arg, int key, struct fuse_args *oargs)
 {
-    if (key == FUSE_OPT_KEY_NONOPT && !vfat_info.dev) {
-        vfat_info.dev = strdup(arg);
-        return (0);
-    }
-    return (1);
+	if (key == FUSE_OPT_KEY_NONOPT && !vfat_info.dev) {
+		vfat_info.dev = strdup(arg);
+		return (0);
+	}
+	return (1);
 }
 
 struct fuse_operations vfat_available_ops = {
-    .getattr = vfat_fuse_getattr,
-    .getxattr = vfat_fuse_getxattr,
-    .readdir = vfat_fuse_readdir,
-    .read = vfat_fuse_read,
+	.getattr = vfat_fuse_getattr,
+	.getxattr = vfat_fuse_getxattr,
+	.readdir = vfat_fuse_readdir,
+	.read = vfat_fuse_read,
 };
 
 int main(int argc, char **argv)
 {
-    struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
+	struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
 
-    fuse_opt_parse(&args, NULL, NULL, vfat_opt_args);
+	fuse_opt_parse(&args, NULL, NULL, vfat_opt_args);
 
-    if (!vfat_info.dev)
-        errx(1, "missing file system parameter");
+	if (!vfat_info.dev)
+	errx(1, "missing file system parameter");
 
-    vfat_init(vfat_info.dev);
-    return (fuse_main(args.argc, args.argv, &vfat_available_ops, NULL));
+	vfat_init(vfat_info.dev);
+	return (fuse_main(args.argc, args.argv, &vfat_available_ops, NULL));
 }
