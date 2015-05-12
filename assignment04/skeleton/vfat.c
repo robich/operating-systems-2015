@@ -177,7 +177,7 @@ vfat_init(const char *dev)
 	vfat_info.root_inode.st_atime = vfat_info.root_inode.st_mtime = vfat_info.root_inode.st_ctime = vfat_info.mount_time;
 	
 	// Error: vfat: mmap failed: Invalid argument
-	//vfat_info.fat = mmap_file(vfat_info.fd, s.reserved_sectors * s.bytes_per_sector, s.sectors_per_fat * s.bytes_per_sector);
+	vfat_info.fat = mmap_file(vfat_info.fd, s.reserved_sectors * s.bytes_per_sector, s.sectors_per_fat * s.bytes_per_sector);
 	// TODO: do not forget to unmap :)
 	vfat_info.fat_boot = s; // easier
 	
@@ -589,8 +589,8 @@ int vfat_fuse_getattr(const char *path, struct stat *st)
 	DEBUG_PRINT("[Info] fuse getattr %s\n", path);
 
 	if (strcmp(path, "/") == 0) {
-		st->st_dev = 0; // Ignored by FUSE
-		st->st_ino = 0; // Ignored by FUSE unless overridden
+		st->st_dev = 0;
+		st->st_ino = 0;
 		st->st_mode = S_IRWXU | S_IRWXG | S_IRWXO | S_IFDIR;
 		st->st_nlink = 1;
 		st->st_uid = vfat_info.mount_uid;
@@ -607,7 +607,7 @@ int vfat_fuse_getattr(const char *path, struct stat *st)
 			err(1, "Couldn't return to initial position: %lx", pos);
 		}
 		st->st_size = cnt * vfat_info.fat_boot.sectors_per_cluster*vfat_info.fat_boot.bytes_per_sector;
-		st->st_blksize = 0; // Ignored by FUSE
+		st->st_blksize = 0;
 		st->st_blocks = 1;
 		return 0;
 	} else {
