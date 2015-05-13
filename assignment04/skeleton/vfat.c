@@ -28,16 +28,16 @@
 iconv_t iconv_utf16;
 char* DEBUGFS_PATH = "/.debug";
 
-void vfat_seek_cluster(uint32_t cluster_no) {
-	if(cluster_no < 2) {
-		err(1, "[Error] cluster number < 2\n");
+void vfat_seek_cluster(uint32_t c) {
+	if(c < 2) {
+		err(1, "[Error] cluster number < 2. It was %d\n", c);
 	}
 
 	uint32_t firstDataSector = vfat_info.fat_boot.reserved_sectors +
 	(vfat_info.fat_boot.fat_count * vfat_info.fat_boot.sectors_per_fat);
-	uint32_t firstSectorofCluster = ((cluster_no - 2) * vfat_info.fat_boot.sectors_per_cluster) + firstDataSector;
+	uint32_t firstSectorofCluster = ((c - 2) * vfat_info.fat_boot.sectors_per_cluster) + firstDataSector;
 	if(lseek(vfat_info.fd, firstSectorofCluster * vfat_info.fat_boot.bytes_per_sector, SEEK_SET) == -1) {
-		err(1, "[Error] lseek cluster_no %d\n", cluster_no);
+		err(1, "[Error] lseek cluster c %d\n", c);
 	}
 }
 
