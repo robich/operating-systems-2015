@@ -340,7 +340,7 @@ conv_time(uint16_t date_entry, uint16_t time_entry) {
 
 void
 vfat_set_stat(struct fat32_direntry dir_entry, char* buffer, fuse_fill_dir_t callback, void *callbackdata, uint32_t cluster_no){
-	// See: http://linux.die.net/man/2/stat
+	// See: http://linux.die.net/man/2/stat for info about the stat struct
 	struct stat* stat_str = malloc(sizeof(struct stat));
 	memset(stat_str, 0, sizeof(struct stat));
 	stat_str->st_dev = 0; // Ignored by FUSE
@@ -388,7 +388,7 @@ vfat_get_file_name(char* nameext, char* filename) {
 		err(1, "[Error] the name cannot strat with a space.");
 	}
 
-	uint32_t fileNameCnt = 0;
+	uint32_t filename_count = 0;
 	bool before_extension = true;
 	bool in_spaces = false;
 	bool in_extension = false;
@@ -420,35 +420,36 @@ vfat_get_file_name(char* nameext, char* filename) {
 			if(nameext[i] == 0x20) {
 				before_extension = false;
 				in_spaces = true;
-				filename[fileNameCnt++] = '.';
+				filename[filename_count++] = '.';
 			} else if(i == 8) {
 				before_extension = false;
 				in_spaces = true;
-				filename[fileNameCnt++] = '.';
-				filename[fileNameCnt++] = nameext[i];
+				filename[filename_count++] = '.';
+				filename[filename_count++] = nameext[i];
 				in_extension = true;
 			} else {
-				filename[fileNameCnt++] = nameext[i];
+				filename[filename_count++] = nameext[i];
 			}
 		} else if(in_spaces) {
 			if(nameext[i] != 0x20) {
 				in_spaces = false;
 				in_extension = true;
-				filename[fileNameCnt++] = nameext[i];
+				filename[filename_count++] = nameext[i];
 			}
 		} else if(in_extension) {
 			if(nameext[i] == 0x20) {
 				break;
 			} else {
-				filename[fileNameCnt++] = nameext[i];
+				filename[filename_count++] = nameext[i];
 			}
 		}
 	}
 
-	if(filename[fileNameCnt - 1] == '.') {
+	if(filename[filename_count - 1] == '.') {
 		filename--; // -
 	}
-	filename[fileNameCnt] = '\0';
+	filename[filename_count] = '\0';
+	
 	return filename;
 }
 
