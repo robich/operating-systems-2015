@@ -616,12 +616,12 @@ int vfat_fuse_getattr(const char *path, struct stat *st)
 				next_cluster_no = vfat_next_cluster(0x0FFFFFFF & next_cluster_no);
 			}
 			if(lseek(vfat_info.fd, pos, SEEK_SET) == -1) {
-				err(1, "Couldn't return to initial position: %lx", pos);
+				err(1, "Couldn't return to initial position %lx", pos);
 			}
 			st->st_size = cnt * vfat_info.fat_boot.sectors_per_cluster*vfat_info.fat_boot.bytes_per_sector;
 			st->st_blksize = 0;
 			st->st_blocks = 1;
-			return vfat_resolve(path, st);
+			return 0;
 		} else {
 			return vfat_resolve(path + 1, st);
 		}
@@ -763,7 +763,7 @@ vfat_opt_args(void *data, const char *arg, int key, struct fuse_args *oargs)
 
 struct fuse_operations vfat_available_ops = {
 	.getattr = vfat_fuse_getattr,
-	.getxattr = vfat_fuse_getxattr, // segfault at mount time
+	//.getxattr = vfat_fuse_getxattr, // segfault when running `sudo ls -l dest`
 	.readdir = vfat_fuse_readdir,
 	.read = vfat_fuse_read,
 };
