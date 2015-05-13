@@ -623,7 +623,7 @@ int vfat_fuse_getattr(const char *path, struct stat *st)
 			st->st_blocks = 1;
 			return 0;
 		} else {
-			return vfat_resolve(path + 1, st);
+			return vfat_resolve(path, st);
 		}
 	}
 }
@@ -763,7 +763,7 @@ vfat_opt_args(void *data, const char *arg, int key, struct fuse_args *oargs)
 
 struct fuse_operations vfat_available_ops = {
 	.getattr = vfat_fuse_getattr,
-	//.getxattr = vfat_fuse_getxattr, // segfault at mount time
+	.getxattr = vfat_fuse_getxattr, // segfault at mount time
 	.readdir = vfat_fuse_readdir,
 	.read = vfat_fuse_read,
 };
