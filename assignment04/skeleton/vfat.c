@@ -655,6 +655,11 @@ const char *path, void *callback_data,
 fuse_fill_dir_t callback, off_t unused_offs, struct fuse_file_info *unused_fi)
 {
 	DEBUG_PRINT("[Info] fuse readdir %s\n", path);
+	
+	if (strncmp(path, DEBUGFS_PATH, strlen(DEBUGFS_PATH)) == 0) {
+	        // This is handled by debug virtual filesystem
+	        return debugfs_fuse_readdir(path + strlen(DEBUGFS_PATH), callback_data, callback, unused_offs, unused_fi);
+    	}
 
 	struct stat st;
 	if(strcmp(path, "/") != 0) {
@@ -672,10 +677,10 @@ struct fuse_file_info *unused)
 {
 	DEBUG_PRINT("fuse read %s\n", path);
 	
-	/*if (strncmp(path, DEBUGFS_PATH, strlen(DEBUGFS_PATH)) == 0) {
-		// This is handled by debug virtual filesystem
-		return debugfs_fuse_read(path + strlen(DEBUGFS_PATH), buf, size, offs, unused);
-	}*/
+	if (strncmp(path, DEBUGFS_PATH, strlen(DEBUGFS_PATH)) == 0) {
+	        // This is handled by debug virtual filesystem
+	        return debugfs_fuse_readdir(path + strlen(DEBUGFS_PATH), callback_data, callback, unused_offs, unused_fi);
+    	}
 	
 	/* TODO: Add your code here. Look at debugfs_fuse_read for example interaction.*/
 
@@ -747,7 +752,6 @@ struct fuse_file_info *unused)
 
 
 	return cnt; // number of bytes read from the file
-	// must be size unless EOF reached, negative for an error
 }
 
 ////////////// No need to modify anything below this point
