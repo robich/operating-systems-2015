@@ -206,7 +206,7 @@ chkSum (unsigned char *pFcbName) {
 }
 
 
-static int
+int
 read_cluster(uint32_t cluster_no, fuse_fill_dir_t callback, void *callbackdata,bool first_cluster) {
 	uint8_t check_sum = '\0';
 	char* buffer = calloc(MAX_NAME_SIZE*2, sizeof(char)); // Max size of name: 13 * 0x14 = 260
@@ -453,7 +453,7 @@ vfat_get_file_name(char* nameext, char* filename) {
 	return filename;
 }
 
-static int
+int
 vfat_readdir(uint32_t cluster_no, fuse_fill_dir_t callback, void *callbackdata)
 {
 	struct stat st; // we can reuse same stat entry over and over again
