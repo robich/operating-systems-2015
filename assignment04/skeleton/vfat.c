@@ -678,8 +678,8 @@ struct fuse_file_info *unused)
 	DEBUG_PRINT("fuse read %s\n", path);
 	
 	if (strncmp(path, DEBUGFS_PATH, strlen(DEBUGFS_PATH)) == 0) {
-	        // This is handled by debug virtual filesystem
-	        return debugfs_fuse_readdir(path + strlen(DEBUGFS_PATH), callback_data, callback, unused_offs, unused_fi);
+		// This is handled by debug virtual filesystem
+        	return debugfs_fuse_read(path + strlen(DEBUGFS_PATH), buf, size, offs, unused);
     	}
 	
 	/* TODO: Add your code here. Look at debugfs_fuse_read for example interaction.*/
