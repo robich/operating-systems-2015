@@ -50,7 +50,7 @@ vfat_init(const char *dev)
 	struct fat_boot_header s;
 	
 	uint16_t root_sectors;
-	uint32_t fat_size, total_sectors,  data_sec, countofClusters;
+	uint32_t fat_size, total_sectors,  data_sec, clusters_count;
 	
 	iconv_utf16 = iconv_open("utf-8", "utf-16"); // from utf-16 to utf-8
 	// These are useful so that we can setup correct permissions in the mounted directories
@@ -91,14 +91,14 @@ vfat_init(const char *dev)
 	/* See page 17 of microsoft specs */
 	 data_sec = total_sectors - (s.reserved_sectors +
 	(s.fat_count * fat_size) + root_sectors);
-	countofClusters =  data_sec / s.sectors_per_cluster;
+	clusters_count =  data_sec / s.sectors_per_cluster;
 	
-	if(countofClusters < 4085) {
+	if(clusters_count < 4085) {
 		err(1,"[Error] Volume looks like FAT12. Expected FAT32.\n");
-	} else if(countofClusters < 65525) {
+	} else if(clusters_count < 65525) {
 		err(1,"[Error] Volume looks like FAT16. Expected FAT32.\n");
 	} else {
-		DEBUG_PRINT("[Info] Volume looks like FAT32: it has %d clusters\n", countofClusters);
+		DEBUG_PRINT("[Info] Volume looks like FAT32: it has %d clusters\n", clusters_count);
 	}
 
 	// Check all other fields
