@@ -621,9 +621,9 @@ int vfat_fuse_getattr(const char *path, struct stat *st)
 			st->st_size = cnt * vfat_info.fat_boot.sectors_per_cluster*vfat_info.fat_boot.bytes_per_sector;
 			st->st_blksize = 0;
 			st->st_blocks = 1;
-			return 0;
-		} else {
 			return vfat_resolve(path, st);
+		} else {
+			return vfat_resolve(path + 1, st);
 		}
 	}
 }
