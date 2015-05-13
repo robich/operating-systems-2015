@@ -30,7 +30,7 @@ char* DEBUGFS_PATH = "/.debug";
 
 void vfat_seek_cluster(uint32_t c) {
 	if(c < 2) {
-		err(1, "[Error] cluster number < 2. It was %d\n", c);
+		DEBUG_PRINT("[Warning] cluster number < 2. It was %d\n", c);
 	}
 
 	uint32_t firstDataSector = vfat_info.fat_boot.reserved_sectors +
