@@ -36,6 +36,7 @@ void vfat_seek_cluster(uint32_t c) {
 	uint32_t firstDataSector = vfat_info.fat_boot.reserved_sectors +
 	(vfat_info.fat_boot.fat_count * vfat_info.fat_boot.sectors_per_fat);
 	uint32_t firstSectorofCluster = ((c - 2) * vfat_info.fat_boot.sectors_per_cluster) + firstDataSector;
+	
 	if(lseek(vfat_info.fd, firstSectorofCluster * vfat_info.fat_boot.bytes_per_sector, SEEK_SET) == -1) {
 		err(1, "[Error] lseek cluster c %d\n", c);
 	}
@@ -48,8 +49,8 @@ vfat_init(const char *dev)
 	
 	struct fat_boot_header s;
 	
-	uint16_t rootDirSectors;
-	uint32_t fatSz, totSec, dataSec, countofClusters;
+	uint16_t root_sectors;
+	uint32_t fat_size, total_sectors,  data_sec, countofClusters;
 	
 	iconv_utf16 = iconv_open("utf-8", "utf-16"); // from utf-16 to utf-8
 	// These are useful so that we can setup correct permissions in the mounted directories
@@ -72,25 +73,25 @@ vfat_init(const char *dev)
 	if(s.root_max_entries != 0) {
 		err(1,"[Error] root_max_entries must be 0 in FAT32 volumes.\n");
 	}
-	rootDirSectors = ((s.root_max_entries * 32) +
+	root_sectors = ((s.root_max_entries * 32) +
 	(s.bytes_per_sector - 1)) / s.bytes_per_sector;
 
 	if(s.sectors_per_fat_small != 0){
-		fatSz = s.sectors_per_fat_small;
+		fat_size = s.sectors_per_fat_small;
 	} else{
-		fatSz = vfat_info.sectors_per_fat;
+		fat_size = vfat_info.sectors_per_fat;
 	}
 
 	if(s.total_sectors_small != 0){
-		totSec = s.total_sectors_small;
+		total_sectors = s.total_sectors_small;
 	} else {
-		totSec = s.total_sectors;
+		total_sectors = s.total_sectors;
 	}
 	
 	/* See page 17 of microsoft specs */
-	dataSec = totSec - (s.reserved_sectors +
-	(s.fat_count * fatSz) + rootDirSectors);
-	countofClusters = dataSec / s.sectors_per_cluster;
+	 data_sec = total_sectors - (s.reserved_sectors +
+	(s.fat_count * fat_size) + root_sectors);
+	countofClusters =  data_sec / s.sectors_per_cluster;
 	
 	if(countofClusters < 4085) {
 		err(1,"[Error] Volume looks like FAT12. Expected FAT32.\n");
@@ -767,7 +768,7 @@ vfat_opt_args(void *data, const char *arg, int key, struct fuse_args *oargs)
 
 struct fuse_operations vfat_available_ops = {
 	.getattr = vfat_fuse_getattr,
-	.getxattr = vfat_fuse_getxattr, // segfault when running `sudo ls -l dest`
+	//.getxattr = vfat_fuse_getxattr, // segfault when running `sudo ls -l dest`
 	.readdir = vfat_fuse_readdir,
 	.read = vfat_fuse_read,
 };
