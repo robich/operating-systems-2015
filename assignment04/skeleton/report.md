@@ -4,7 +4,7 @@
 Done
 
 ## 2. Parse BPB sector
-Done, but at the time being your python test fails, we need to fix something.
+Done
 
 ## 3. vfat_next_cluster
 Done
@@ -28,4 +28,4 @@ Should work
 Done
 
 ## 10.
-Attemp but doesn't pass your tests
+Attempt but doesn't pass your tests
