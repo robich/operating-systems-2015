@@ -177,20 +177,16 @@ vfat_init(const char *dev)
 	vfat_info.root_inode.st_size = 0;
 	vfat_info.root_inode.st_atime = vfat_info.root_inode.st_mtime = vfat_info.root_inode.st_ctime = vfat_info.mount_time;
 	
+	// Error: vfat: mmap failed: Invalid argument
+	DEBUG_PRINT("[Info] Attempting to mmap: \n[Info] fd=%d, reserved_sectors=%d, bytes_per_sector=%d\n[Info] sectors_per_fat=%d, bytes_per_sector=%d\n", vfat_info.fd, s.reserved_sectors, s.bytes_per_sector, s.sectors_per_fat, s.bytes_per_sector);
 	vfat_info.fat = mmap_file(vfat_info.fd, s.reserved_sectors * s.bytes_per_sector, s.sectors_per_fat * s.bytes_per_sector);
 	// TODO: do not forget to unmap :)
 	
-	/* Parse BPB, fill vfat_info */
-	vfat_info.bytes_per_sector = s.bytes_per_sector;
-    	vfat_info.sectors_per_cluster = s.sectors_per_cluster;
-    	vfat_info.cluster_size = s.bytes_per_sector * s.sectors_per_cluster;
-    	vfat_info.fat_size = vfat_info.sectors_per_fat * s.bytes_per_sector;
-	vfat_info.fat_entries = vfat_info.fat_size / sizeof(uint32_t);
-    	vfat_info.fat_begin_offset = s.reserved_sectors * s.bytes_per_sector;
-    	vfat_info.cluster_begin_offset = vfat_info.fat_begin_offset + s.fat_count * vfat_info.fat_size;
-    	vfat_info.reserved_sectors = s.reserved_sectors;
-    	vfat_info.direntry_per_cluster = vfat_info.cluster_size / sizeof(struct fat32_direntry);
-    
+	if (vfat_info.fat < 0) {
+		err(1, "[Error] mmap failed\n");
+	} else {
+		DEBUG_PRINT("[Info] mmap success\n");
+	}
 	vfat_info.fat_boot = s; // easier
 	
 	DEBUG_PRINT("[Info] vfat_init(1): end of function\n");
