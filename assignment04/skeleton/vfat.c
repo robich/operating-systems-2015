@@ -169,6 +169,18 @@ vfat_init(const char *dev)
 
 	DEBUG_PRINT("[Info] Volume is FAT32 for sure.\n");
 	
+	/* Read boot sector informations and fill vfat_info */
+    	vfat_info.bytes_per_sector = s.bytes_per_sector;
+    	vfat_info.sectors_per_cluster = s.sectors_per_cluster;
+    	vfat_info.cluster_size = s.bytes_per_sector * s.sectors_per_cluster;
+    	vfat_info.fat_size = vfat_info.sectors_per_fat * s.bytes_per_sector;
+    	vfat_info.fat_entries = vfat_info.fat_size / sizeof(uint32_t);
+    	vfat_info.fat_begin_offset = s.reserved_sectors * s.bytes_per_sector;
+    	vfat_info.cluster_begin_offset = vfat_info.fat_begin_offset + s.fat_count * vfat_info.fat_size;
+    	vfat_info.reserved_sectors = s.reserved_sectors;
+    	vfat_info.direntry_per_cluster = vfat_info.cluster_size / sizeof(struct fat32_direntry);
+
+	
 	vfat_info.root_inode.st_ino = le32toh(s.root_cluster);
 	vfat_info.root_inode.st_mode = 0555 | S_IFDIR;
 	vfat_info.root_inode.st_nlink = 1;
