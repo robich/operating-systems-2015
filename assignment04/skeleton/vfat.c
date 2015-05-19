@@ -169,7 +169,7 @@ vfat_init(const char *dev)
 
 	DEBUG_PRINT("[Info] Volume is FAT32 for sure.\n");
 	
-	/* Read boot sector informations and fill vfat_info */
+	/* Parse BPB */
     	vfat_info.bytes_per_sector = s.bytes_per_sector;
     	vfat_info.sectors_per_cluster = s.sectors_per_cluster;
     	vfat_info.cluster_size = s.bytes_per_sector * s.sectors_per_cluster;
