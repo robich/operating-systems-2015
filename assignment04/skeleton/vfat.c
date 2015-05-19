@@ -79,7 +79,7 @@ vfat_init(const char *dev)
 	if(s.sectors_per_fat_small != 0){
 		vfat_info.sectors_per_fat = s.sectors_per_fat_small;
 	} else{
-		vfat_info.sectors_per_fat = vfat_info.sectors_per_fat;
+		vfat_info.sectors_per_fat = s.sectors_per_fat;
 	}
 
 	if(s.total_sectors_small != 0){
