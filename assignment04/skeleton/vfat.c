@@ -189,7 +189,6 @@ vfat_init(const char *dev)
     	vfat_info.fat_begin_offset = s.reserved_sectors * s.bytes_per_sector;
     	vfat_info.cluster_begin_offset = vfat_info.fat_begin_offset + s.fat_count * vfat_info.fat_size;
     	vfat_info.reserved_sectors = s.reserved_sectors;
-    	vfat_info.root_first_cluster = s.root_cluster;
     	vfat_info.direntry_per_cluster = vfat_info.cluster_size / sizeof(struct fat32_direntry);
     
 	vfat_info.fat_boot = s; // easier
