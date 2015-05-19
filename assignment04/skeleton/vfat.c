@@ -50,7 +50,7 @@ vfat_init(const char *dev)
 	struct fat_boot_header s;
 	
 	uint16_t root_sectors;
-	uint32_t fat_size, total_sectors,  data_sec, clusters_count;
+	uint32_t total_sectors,  data_sec, clusters_count;
 	
 	iconv_utf16 = iconv_open("utf-8", "utf-16"); // from utf-16 to utf-8
 	// These are useful so that we can setup correct permissions in the mounted directories
@@ -77,9 +77,9 @@ vfat_init(const char *dev)
 	(s.bytes_per_sector - 1)) / s.bytes_per_sector;
 
 	if(s.sectors_per_fat_small != 0){
-		fat_size = s.sectors_per_fat_small;
+		vfat_info.sectors_per_fat = s.sectors_per_fat_small;
 	} else{
-		fat_size = vfat_info.sectors_per_fat;
+		vfat_info.sectors_per_fat = vfat_info.sectors_per_fat;
 	}
 
 	if(s.total_sectors_small != 0){
@@ -90,7 +90,7 @@ vfat_init(const char *dev)
 	
 	/* See page 17 of microsoft specs */
 	 data_sec = total_sectors - (s.reserved_sectors +
-	(s.fat_count * fat_size) + root_sectors);
+	(s.fat_count * vfat_info.sectors_per_fat) + root_sectors);
 	clusters_count =  data_sec / s.sectors_per_cluster;
 	
 	if(clusters_count < 4085) {
