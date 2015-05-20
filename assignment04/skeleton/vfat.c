@@ -334,7 +334,7 @@ read_cluster(uint32_t cluster_no, fuse_fill_dir_t callback, void *callbackdata,b
 }
 
 /* TODO */
-time_t date_to_timestamp(uint16_t date, uint16_t time, uint8_t msecs)
+time_t conv_time2(uint16_t date, uint16_t time, uint8_t msecs)
 {
 	struct tm t;
 	
@@ -409,9 +409,9 @@ vfat_set_stat(struct fat32_direntry dir_entry, char* buffer, fuse_fill_dir_t cal
 	stat_str->st_rdev = 0;
 	stat_str->st_blksize = 0; // Ignored by FUSE
 	stat_str->st_blocks = 1;
-	stat_str->st_atime = conv_time(dir_entry.atime_date, 0);
-	stat_str->st_mtime = conv_time(dir_entry.mtime_date, dir_entry.mtime_time);
-	stat_str->st_ctime = conv_time(dir_entry.ctime_date, dir_entry.ctime_time);
+	stat_str->st_atime = conv_time2(dir_entry.atime_date, 0, 0);
+	stat_str->st_mtime = conv_time2(dir_entry.mtime_date, dir_entry.mtime_time, 0);
+	stat_str->st_ctime = conv_time2(dir_entry.ctime_date, dir_entry.ctime_time, dir_entry.ctime_ms);
 	callback(callbackdata, buffer, stat_str, 0);
 	free(stat_str);
 }
