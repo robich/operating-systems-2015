@@ -333,12 +333,10 @@ read_cluster(uint32_t cluster_no, fuse_fill_dir_t callback, void *callbackdata,b
 	return DIRECTORY_NOT_FINISHED;
 }
 
-/* TODO */
 time_t conv_time2(uint16_t date, uint16_t time, uint8_t msecs)
 {
+	// See: http://linux.die.net/man/3/ctime
 	struct tm tm;
-	
-	tm.tm_isdst = 0;
 	
 	tm.tm_sec = (time & 0x1F) * 2;
 	tm.tm_min = ((time >> 5) & 0x3F);
@@ -346,6 +344,9 @@ time_t conv_time2(uint16_t date, uint16_t time, uint8_t msecs)
 	tm.tm_mday = date & 0x1F;
 	tm.tm_mon = ((date >> 5) & 0xF) - 1;
 	tm.tm_year = ((date >> 9) & 0x7F) + 80;
+	tm.tm_wday = 0;
+    	tm.tm_yday = 0;
+    	tm.tm_isdst = 0;
 
 	time_t out = mktime(&tm);
 
@@ -357,10 +358,11 @@ time_t conv_time2(uint16_t date, uint16_t time, uint8_t msecs)
 void
 vfat_set_stat(struct fat32_direntry dir_entry, char* buffer, fuse_fill_dir_t callback, void *callbackdata, uint32_t cluster_no){
 	// See: http://linux.die.net/man/2/stat for info about the stat struct
+	
 	struct stat* stat_str = malloc(sizeof(struct stat));
 	memset(stat_str, 0, sizeof(struct stat));
-	stat_str->st_dev = 0; // Ignored by FUSE
-	stat_str->st_ino = cluster_no; // Ignored by FUSE unless overridden
+	stat_str->st_dev = 0;
+	stat_str->st_ino = cluster_no;
 	if((dir_entry.attr & ATTR_READ_ONLY) == ATTR_READ_ONLY){
 		stat_str->st_mode = S_IRUSR | S_IRGRP | S_IROTH;
 	}
