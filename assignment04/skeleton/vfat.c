@@ -347,7 +347,7 @@ time_t conv_time2(uint16_t date, uint16_t time, uint8_t msecs)
 	tm.tm_mon = ((date >> 5) & 0xF) - 1;
 	tm.tm_year = ((date >> 9) & 0x7F) + 80;
 
-	time_t out = mktime(&t);
+	time_t out = mktime(&tm);
 
 	out += msecs * 10 / 1000;
 
