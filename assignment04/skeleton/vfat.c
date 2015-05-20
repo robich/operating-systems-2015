@@ -333,6 +333,27 @@ read_cluster(uint32_t cluster_no, fuse_fill_dir_t callback, void *callbackdata,b
 	return DIRECTORY_NOT_FINISHED;
 }
 
+/* TODO */
+time_t date_to_timestamp(uint16_t date, uint16_t time, uint8_t msecs)
+{
+	struct tm t;
+
+	t.tm_mday = date & DAY_MASK;
+	t.tm_mon = ((date >> MONTH_OFFSET) & MONTH_MASK) - FIRST_MONTH_NO;
+	t.tm_year = ((date >> YEAR_OFFSET) & YEAR_MASK) + MSDOS_EPOCH_OFFSET;
+	t.tm_hour = (time >> HOUR_OFFSET) & HOUR_MASK;
+	t.tm_min = ((time >> MIN_OFFSET) & MIN_MASK);
+	t.tm_sec = (time & SEC_MASK) * SEC_MULTIPLIER;
+	t.tm_isdst = 0; // According to Peter's forum post
+
+	time_t timestamp = mktime(&t);
+
+	/* Adding microseconds */
+	timestamp += msecs * MSEC_MULTIPLIER / MSEC_PER_SEC;
+
+	return timestamp;
+}
+
 time_t
 conv_time(uint16_t date_entry, uint16_t time_entry) {
 	struct tm * time_info;
