@@ -336,41 +336,23 @@ read_cluster(uint32_t cluster_no, fuse_fill_dir_t callback, void *callbackdata,b
 /* TODO */
 time_t conv_time2(uint16_t date, uint16_t time, uint8_t msecs)
 {
-	struct tm t;
+	struct tm tm;
 	
-	t.tm_isdst = 0;
+	tm.tm_isdst = 0;
 	
-	t.tm_mday = date & 0x1F;
-	t.tm_mon = ((date >> 5) & 0xF) - 1;
-	t.tm_year = ((date >> 9) & 0x7F) + 80;
-	t.tm_hour = (time >> 11) & 0x3F;
-	t.tm_min = ((time >> 5) & 0x3F);
-	t.tm_sec = (time & 0x1F) * 2;
+	tm.tm_sec = (time & 0x1F) * 2;
+	tm.tm_min = ((time >> 5) & 0x3F);
+	tm.tm_hour = (time >> 11) & 0x3F;
+	tm.tm_mday = date & 0x1F;
+	tm.tm_mon = ((date >> 5) & 0xF) - 1;
+	tm.tm_year = ((date >> 9) & 0x7F) + 80;
 
-	time_t timestamp = mktime(&t);
+	time_t out = mktime(&t);
 
-	/* ms */
-	timestamp += msecs * 10 / 1000;
+	out += msecs * 10 / 1000;
 
-	return timestamp;
+	return out;
 }
-
-time_t
-conv_time(uint16_t date_entry, uint16_t time_entry) {
-	struct tm * time_info;
-	time_t raw_time;
-
-	time(&raw_time);
-	time_info = localtime(&raw_time);
-	time_info->tm_sec = (time_entry & 0x1f) << 1;
-	time_info->tm_min = (time_entry & 0x1E0) >> 5;
-	time_info->tm_hour = (time_entry & 0xFE00) >> 11;
-	time_info->tm_mday = date_entry & 0x1F;
-	time_info->tm_mon = ((date_entry & 0x1E0) >> 5) - 1;
-	time_info->tm_year = ((date_entry & 0xFE00) >> 9) + 80;
-	return mktime(time_info);
-}
-
 
 void
 vfat_set_stat(struct fat32_direntry dir_entry, char* buffer, fuse_fill_dir_t callback, void *callbackdata, uint32_t cluster_no){
