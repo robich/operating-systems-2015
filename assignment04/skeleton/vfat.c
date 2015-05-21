@@ -502,6 +502,11 @@ vfat_readdir(uint32_t cluster_no, fuse_fill_dir_t callback, void *callbackdata)
 }
 
 int vfat_next_cluster(uint32_t c) {
+	
+	if (c < 0 || c >= vfat_info.fat_entries) {
+		err(1, "[Error] Bad cluster no\n");
+	}
+		
 	uint32_t next_cluster, next_cluster_check;
 	uint32_t first_fat = vfat_info.fat_boot.reserved_sectors * vfat_info.fat_boot.bytes_per_sector;
 
