@@ -710,7 +710,12 @@ struct fuse_file_info *unused)
 	/* TODO: Add your code here. Look at debugfs_fuse_read for example interaction.*/
 
 	struct stat st;
-	vfat_resolve(path, &st);
+	int err = 0;
+	err =  vfat_resolve(path, &st);
+	
+	if (err != 0)
+    		return err;
+    		
 	if(!(st.st_mode & S_IFREG)) {
 		DEBUG_PRINT("Trying to read a directory or not regular file\n");
 		return -1;
