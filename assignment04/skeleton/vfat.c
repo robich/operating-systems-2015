@@ -710,10 +710,10 @@ struct fuse_file_info *unused)
 	/* TODO: Add your code here. Look at debugfs_fuse_read for example interaction.*/
 
 	struct stat st;
-	int err = 0;
-	err =  vfat_resolve(path, &st);
+	int error = 0;
+	error = vfat_resolve(path, &st);
 	
-	if (err != 0)
+	if (error != 0)
     		return err;
     		
 	if(!(st.st_mode & S_IFREG)) {
